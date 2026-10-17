@@ -1801,21 +1801,23 @@ const IMKEY='d616-classe-1a-img';
 function cacheImgs(){ try{ localStorage.setItem(IMKEY,JSON.stringify(IMG)); }catch(e){} }
 try{ const s=JSON.parse(localStorage.getItem(IMKEY)||'null'); if(s&&typeof s==='object') Object.assign(IMG,s); }catch(e){}
 async function shrink(file,slot){
+  // Online le immagini vanno su Supabase Storage (fino a 5 MB): teniamo alta risoluzione.
+  // Il primo piano NON viene più ritagliato al caricamento, così si può inquadrare dopo con zoom e spostamento.
   const url=URL.createObjectURL(file);
   try{
     const im=await new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ko;i.src=url;});
-    const face=slot==='face';
-    let W,H,dx=0,dy=0,w,hh;
-    if(face){ W=640;H=360; const r=Math.max(W/im.width,H/im.height); w=im.width*r; hh=im.height*r; dx=(W-w)/2; dy=(H-hh)/3; }
-    else { const r=Math.min(520/im.width,780/im.height,1); W=Math.round(im.width*r); H=Math.round(im.height*r); w=W; hh=H; }
+    const MAX=2000, r=Math.min(1,MAX/Math.max(im.width,im.height));
+    const W=Math.round(im.width*r), H=Math.round(im.height*r);
     const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d');
-    let type='image/jpeg';
-    if(!face && /png|webp|gif/i.test(file.type)){ type='image/png'; }
-    else { g.fillStyle='#ffffff'; g.fillRect(0,0,W,H); }
-    g.drawImage(im,dx,dy,w,hh);
-    let data=cv.toDataURL(type,.85);
-    if(type==='image/png'&&data.length>200000){ type='image/webp'; data=cv.toDataURL(type,.85); if(!data.startsWith('data:image/webp')||data.length>200000){ type='image/jpeg'; } }
-    if(type==='image/jpeg'){ const c2=document.createElement('canvas'); c2.width=W; c2.height=H; const g2=c2.getContext('2d'); g2.fillStyle='#ffffff'; g2.fillRect(0,0,W,H); g2.drawImage(cv,0,0); let q=.85; data=c2.toDataURL('image/jpeg',q); while(data.length>200000&&q>.4){ q-=.1; data=c2.toDataURL('image/jpeg',q); } }
+    g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
+    const alpha=/png|webp|gif/i.test(file.type);
+    if(!alpha){ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H); }
+    g.drawImage(im,0,0,W,H);
+    const LIM=3500000; // ~2,6 MB reali: sotto il limite di 5 MB del bucket
+    let data='';
+    if(alpha){ data=cv.toDataURL('image/webp',.92); if(!data.startsWith('data:image/webp')) data=cv.toDataURL('image/png'); if(data.length<=LIM) return data; }
+    const c2=document.createElement('canvas'); c2.width=W; c2.height=H; const g2=c2.getContext('2d'); g2.fillStyle='#ffffff'; g2.fillRect(0,0,W,H); g2.drawImage(cv,0,0);
+    let q=.92; data=c2.toDataURL('image/jpeg',q); while(data.length>LIM&&q>.6){ q-=.08; data=c2.toDataURL('image/jpeg',q); }
     return data;
   } finally { URL.revokeObjectURL(url); }
 }
@@ -2323,7 +2325,7 @@ async function uploadImg(file,maxSide,keepAlpha){
     if(!alpha){ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H); }
     g.drawImage(im,0,0,W,H);
     let type=alpha?'image/webp':'image/jpeg';
-    let blob=await new Promise(ok=>cv.toBlob(ok,type,.86));
+    let blob=await new Promise(ok=>cv.toBlob(ok,type,.92));
     if(!blob||blob.type!==type){ type=alpha?'image/png':'image/jpeg'; blob=await new Promise(ok=>cv.toBlob(ok,type,.86)); }
     if(R.assets){ const res=await R.assets.upload(blob,{type}); return res.id; }
     let q=.8, data=cv.toDataURL(alpha?'image/webp':'image/jpeg',q);
@@ -2631,7 +2633,7 @@ document.addEventListener('click',async e=>{
   else if(a==='editpng'){ edit={col:'png',obj:clone(pngOf(id))}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
   else if(a==='closeedit'){ edit=null; renderRegia(); }
   else if(a==='eimg'){ readEditor(); const f=await pickFile('image/*'); if(!f) return; b.disabled=true; b.textContent='Carico…';
-    try{ edit.obj.img=await uploadImg(f,edit.col==='png'?1100:1920,edit.col==='png'); toast('Immagine caricata'); }catch(err){ toast('Immagine non caricata: '+((err&&err.code)||'formato non valido')); } renderRegia(); }
+    try{ edit.obj.img=await uploadImg(f,edit.col==='png'?1600:2400,edit.col==='png'); toast('Immagine caricata'); }catch(err){ toast('Immagine non caricata: '+((err&&err.code)||'formato non valido')); } renderRegia(); }
   else if(a==='saveedit'){ readEditor(); const o=clone(edit.obj); delete o._new; await saveDoc(edit.col,o); edit=null; renderRegia(); }
   else if(a==='deledit'){ if(b.dataset.sure!=='1'){ b.dataset.sure='1'; b.textContent='Sì, elimina'; b.classList.add('danger'); return; } await delDoc(edit.col,edit.obj.id); edit=null; renderRegia(); }
   else if(a==='addfoe'){ const p=pngOf(document.getElementById('fFoe').value); const n=Math.max(1,Math.min(12,+document.getElementById('fQty').value||1)); if(!p) return;
