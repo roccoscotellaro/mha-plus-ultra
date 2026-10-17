@@ -2276,7 +2276,7 @@ function setView(v){
 }
 function fromHash(){ const h=location.hash.replace('#',''); setView(h==='regia'||h==='schermo'?h:'schede'); }
 addEventListener('hashchange',fromHash);
-function navHtml(){ return `<nav class="vnav" aria-label="Sezioni"><a href="#" data-view="schede">Schede</a>${R.owner?'<a href="#regia" data-view="regia">Regia</a>':''}<a href="#schermo" data-view="schermo">Schermo</a>${R.local?'':R.owner?'<a href="#" data-pinout title="Esci dalla modalità master">Esci master</a>':'<a href="#" data-pinin title="Entra come master con il PIN">🔒 Master</a>'}</nav>`; }
+function navHtml(){ return `<nav class="vnav" aria-label="Sezioni"><a href="#" data-view="schede">Schede</a>${R.owner?'<a href="#regia" data-view="regia">Regia</a>':''}<a href="#schermo" data-view="schermo">Schermo</a><a href="manuale.html">Manuale</a>${R.local?'':R.owner?'<a href="#" data-pinout title="Esci dalla modalità master">Esci master</a>':'<a href="#" data-pinin title="Entra come master con il PIN">🔒 Master</a>'}</nav>`; }
 document.addEventListener('click',async e=>{
   const a=e.target.closest&&e.target.closest('[data-pinin],[data-pinout]'); if(!a||!window.mhaMaster) return; e.preventDefault();
   if(a.hasAttribute('data-pinout')){ mhaMaster.logout(); R.owner=false; renderNav(); if(R.view==='regia') location.hash=''; toast('Modalità master disattivata su questo dispositivo'); return; }
