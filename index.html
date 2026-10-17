@@ -280,6 +280,20 @@ body{background-color:var(--paper);background-size:10px 10px}
 [hidden]{display:none!important}
 .rc{display:flex;flex-direction:column;justify-content:flex-start;align-self:flex-start}
 .rc .ph{flex:none}
+.rc .phw{display:block;flex:none;width:100%;aspect-ratio:3/4;overflow:hidden;border-bottom:2px solid var(--edge);background:var(--blue-soft)}
+.rc .phw .ph{border:0;height:100%;object-position:50% 0}
+.only-master{display:none!important}
+body.master .only-master{display:inline-flex!important}
+.face img{object-position:50% 0}
+.tv-turn img,.tv-ph img,.rg-pc img,.fx-face,.tv-face img{object-position:50% 0}
+.cropdlg{width:min(600px,96vw)}
+.cropframe{position:relative;overflow:hidden;margin:0 auto 12px;border:3px solid var(--edge);background:repeating-linear-gradient(135deg,var(--blue-soft) 0 10px,var(--card) 10px 20px);touch-action:none;cursor:grab;user-select:none}
+.cropframe.thumb{width:min(240px,70vw);aspect-ratio:3/4}
+.cropframe.face{width:100%;aspect-ratio:16/9}
+.cropframe:active{cursor:grabbing}
+.cropframe img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.croprow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.croprow input[type=range]{flex:1;min-width:160px}
 
 /* bottoni */
 .btn{border:2px solid var(--edge);border-radius:2px;box-shadow:var(--hard-s);font-weight:700;letter-spacing:.01em}
@@ -659,7 +673,7 @@ body.tvmode{overflow:hidden;background:#07090f}
       <select id="charSel" class="charsel"></select>
       <button class="btn sm" id="bNew">Nuovo</button>
       <button class="btn sm" id="bDup">Duplica</button>
-      <button class="btn sm ghost" id="bDel">Elimina</button><button class="btn sm danger" id="bDelOk" hidden>Sì, elimina</button>
+      <button class="btn sm only-master" data-crop="thumb" title="Scegli cosa mostra la figurina in alto">Anteprima</button><button class="btn sm ghost" id="bDel">Elimina</button><button class="btn sm danger" id="bDelOk" hidden>Sì, elimina</button>
     </div>
     <div class="who">
       <span class="save" id="saveState">Salvataggio…</span>
@@ -687,7 +701,7 @@ body.tvmode{overflow:hidden;background:#07090f}
       <div class="face">
         <img id="pFace" alt="" hidden>
         <div class="face-empty" id="pFaceEmpty"><b>Primo piano</b><span>Il volto del personaggio, in orizzontale</span></div>
-        <div class="acts"><button class="btn sm" data-upimg="face">Carica primo piano</button><button class="btn sm ghost" data-rmimg="face" id="pFaceRm" hidden>Togli</button></div>
+        <div class="acts"><button class="btn sm" data-upimg="face">Carica primo piano</button><button class="btn sm" data-crop="face" id="pFaceCrop" hidden>Inquadra</button><button class="btn sm ghost" data-rmimg="face" id="pFaceRm" hidden>Togli</button></div>
       </div>
       <div class="nameblock">
         <input class="furi" id="pFuri" data-f="jpReading" placeholder="lettura in kana" aria-label="Lettura del nome giapponese">
@@ -887,6 +901,15 @@ body.tvmode{overflow:hidden;background:#07090f}
   </div>
 </div>
 
+<dialog id="cropDlg" class="cropdlg" aria-labelledby="cropTitle">
+  <div class="dh"><h3 id="cropTitle">Inquadratura</h3><button class="x" id="cropClose" aria-label="Chiudi">×</button></div>
+  <div class="dbody">
+    <p class="hint" id="cropHint">Trascina l'immagine per spostarla e usa lo zoom per ingrandire.</p>
+    <div class="cropframe" id="cropFrame"><img id="cropImg" alt="" draggable="false"></div>
+    <div class="croprow"><label for="cropZoom"><b>Zoom</b></label><input type="range" id="cropZoom" min="1" max="4" step="0.05" value="1"><span id="cropZv">1×</span></div>
+    <div class="croprow"><button class="btn sm ghost" id="cropReset">Ripristina</button><span style="flex:1"></span><button class="btn sm" id="cropCancel">Annulla</button><button class="btn sm primary" id="cropOk">Salva</button></div>
+  </div>
+</dialog>
 <dialog id="dlg">
   <div class="dh">
     <h3 id="dlgTitle"></h3>
@@ -1693,6 +1716,9 @@ const SLOTS=['face','uniform','hero','casual'];
 const OUTLBL={uniform:'Uniforme scolastica',hero:'Costume da eroe',casual:'Abiti casual'};
 const imgOf=(id,s)=>((IMG[id]||{})[s]||'');
 function portraitOf(c){ const m=IMG[c.id]||{}; return m.face||m.hero||m.uniform||m.casual||c.photo||''; }
+function cropOf(c,k){ const v=(c&&c[k==='thumb'?'thumb':'faceCrop'])||{}; const n=(x,d,lo,hi)=>{x=+x;return isFinite(x)?Math.min(hi,Math.max(lo,x)):d}; return {x:n(v.x,50,0,100),y:n(v.y,0,0,100),z:n(v.z,1,1,4)}; }
+function cropCss(cr){ return `object-position:${cr.x}% ${cr.y}%;transform:scale(${cr.z});transform-origin:${cr.x}% ${cr.y}%`; }
+function isMaster(){ try{ return typeof window.mhaOwner==='function'?!!window.mhaOwner():false; }catch(e){ return false; } }
 function renderPhoto(){ renderProfile(); }
 function renderProfile(){
   const p=$('#profile'); const col=/^#[0-9a-f]{6}$/i.test(C.color||'')?C.color:'#2a9d8f';
@@ -1705,13 +1731,14 @@ function renderProfile(){
   oi.hidden=!o; if(o){ oi.src=o; oi.alt=OUTLBL[outfit]+' di '+(C.name||'personaggio'); } else oi.removeAttribute('src');
   $('#pOutfitEmpty').hidden=!!o; $('#pOutfitLbl').textContent=OUTLBL[outfit]; $('#pOutfitRm').hidden=!o;
   const f=imgOf(C.id,'face'), fi=$('#pFace');
-  fi.hidden=!f; if(f){ fi.src=f; fi.alt='Primo piano di '+(C.name||'personaggio'); } else fi.removeAttribute('src');
+  fi.hidden=!f; if(f){ fi.src=f; fi.alt='Primo piano di '+(C.name||'personaggio'); fi.style.cssText=cropCss(cropOf(C,'face')); } else fi.removeAttribute('src');
+  $('#pFaceCrop').hidden=!f;
   $('#pFaceEmpty').hidden=!!f; $('#pFaceRm').hidden=!f;
 }
 function renderRoster(){
   const cards=store.chars.map(c=>{
     const nm=c.name||c.hero||'Senza nome', ini=(nm.trim()[0]||'?').toUpperCase();
-    const pt=portraitOf(c); const pic=pt?`<img class="ph" src="${esc(pt)}" alt="">`:`<span class="ph ini" aria-hidden="true">${esc(ini)}</span>`;
+    const pt=portraitOf(c); const pic=pt?`<span class="phw"><img class="ph" src="${esc(pt)}" alt="" style="${cropCss(cropOf(c,'thumb'))}"></span>`:`<span class="ph ini" aria-hidden="true">${esc(ini)}</span>`;
     return `<button class="rc" style="--rc:${/^#[0-9a-f]{6}$/i.test(c.color||"")?c.color:"var(--edge)"}" data-pick="${esc(c.id)}" aria-current="${c.id===C.id}">${pic}<span class="n">${esc(nm)}</span><span class="p">${esc(c.hero||c.quirk||'')}${c.player?' · '+esc(c.player):''}</span></button>`;
   }).join('');
   $('#roster').innerHTML=cards+`<button class="rc add" data-pick="__new">+ Nuova<br>scheda</button>`;
@@ -1744,6 +1771,7 @@ document.addEventListener('click',e=>{
   else if(ds.rmtg!=null){ C.tags.splice(+ds.rmtg,1); changed(true); }
   else if(ds.rmsup!=null){ C.support.splice(+ds.rmsup,1); renderSupport(); changed(); }
   else if(ds.outfit){ outfit=ds.outfit; renderProfile(); }
+  else if(ds.crop){ openCrop(ds.crop); }
   else if(ds.upimg){ upSlot=ds.upimg==='outfit'?outfit:'face'; $('#imgIn').click(); }
   else if(ds.rmimg){ setImg(C.id, ds.rmimg==='outfit'?outfit:'face', ''); }
   else if(ds.pick){ if(ds.pick==='__new'){ $('#bNew').click(); } else { const c=store.chars.find(x=>x.id===ds.pick); if(c){ C=c; store.current=c.id; renderAll(); lsSave(); window.scrollTo({top:0,behavior:'smooth'}); } } }
@@ -1804,6 +1832,40 @@ $('#imgIn').onchange=async e=>{
   const f=e.target.files[0]; e.target.value=''; if(!f) return;
   try{ const d=await shrink(f,upSlot); await setImg(C.id,upSlot,d); toast(upSlot==='face'?'Primo piano caricato':OUTLBL[upSlot]+': immagine caricata'); }
   catch(err){ toast('Non riesco a leggere questa immagine: prova con un JPG o PNG'); }
+};
+
+/* ---------- inquadratura immagini ---------- */
+const cropDlg=$('#cropDlg'); let cropK='face', cropV={x:50,y:0,z:1}, cropDrag=null;
+function cropApply(){ $('#cropImg').style.cssText=cropCss(cropV); $('#cropZoom').value=cropV.z; $('#cropZv').textContent=(+cropV.z).toFixed(1).replace(/\.0$/,'')+'×'; }
+function openCrop(k){
+  if(k==='thumb'&&!isMaster()){ toast('Solo il master può cambiare l\'anteprima'); return; }
+  const src=k==='thumb'?portraitOf(C):imgOf(C.id,'face');
+  if(!src){ toast(k==='thumb'?'Questa scheda non ha ancora un\'immagine':'Carica prima il primo piano'); return; }
+  cropK=k; cropV=cropOf(C,k);
+  $('#cropTitle').textContent=k==='thumb'?'Anteprima nella barra':'Inquadra il primo piano';
+  $('#cropHint').textContent=k==='thumb'?'Scegli cosa mostra la figurina in alto. Trascina per spostare, usa lo zoom per ingrandire. La vede tutto il tavolo.':'Trascina l\'immagine per spostarla e usa lo zoom per ingrandire: utile se hai caricato un\'immagine a figura intera.';
+  $('#cropFrame').className='cropframe '+(k==='thumb'?'thumb':'face');
+  $('#cropImg').src=src; cropApply();
+  if(typeof cropDlg.showModal==='function') cropDlg.showModal(); else cropDlg.setAttribute('open','');
+}
+$('#cropZoom').oninput=e=>{ cropV.z=+e.target.value; cropApply(); };
+$('#cropFrame').addEventListener('pointerdown',e=>{ cropDrag={px:e.clientX,py:e.clientY,x:cropV.x,y:cropV.y}; e.currentTarget.setPointerCapture(e.pointerId); });
+$('#cropFrame').addEventListener('pointermove',e=>{
+  if(!cropDrag) return; const r=e.currentTarget.getBoundingClientRect();
+  const k=100/Math.max(1,cropV.z), cl=v=>Math.min(100,Math.max(0,v));
+  cropV.x=Math.round(cl(cropDrag.x-(e.clientX-cropDrag.px)/r.width*k*1.5));
+  cropV.y=Math.round(cl(cropDrag.y-(e.clientY-cropDrag.py)/r.height*k*1.5));
+  cropApply();
+});
+['pointerup','pointercancel'].forEach(t=>$('#cropFrame').addEventListener(t,()=>{ cropDrag=null; }));
+$('#cropFrame').addEventListener('wheel',e=>{ e.preventDefault(); cropV.z=Math.min(4,Math.max(1,+(cropV.z-e.deltaY*0.002).toFixed(2))); cropApply(); },{passive:false});
+$('#cropReset').onclick=()=>{ cropV={x:50,y:0,z:1}; cropApply(); };
+$('#cropCancel').onclick=$('#cropClose').onclick=()=>cropDlg.close();
+cropDlg.addEventListener('click',e=>{ if(e.target===cropDlg) cropDlg.close(); });
+$('#cropOk').onclick=()=>{
+  if(cropK==='thumb'&&!isMaster()){ cropDlg.close(); return; }
+  C[cropK==='thumb'?'thumb':'faceCrop']={x:cropV.x,y:cropV.y,z:+cropV.z};
+  cropDlg.close(); renderProfile(); renderRoster(); changed(); toast(cropK==='thumb'?'Anteprima aggiornata':'Primo piano inquadrato');
 };
 
 /* ---------- dialogo poteri / tratti / tag ---------- */
@@ -2186,6 +2248,7 @@ $('#bPdf').onclick=makePdf;
 const ABK=['M','A','R','V','E','L'];
 const ABN={M:'Mischia',A:'Agilità',R:'Resistenza',V:'Vigilanza',E:'Ego',L:'Logica'};
 const DEFOF={M:'M',A:'A',E:'V',L:'L',R:'R',V:'V'};
+window.mhaOwner=()=>!!R.owner;
 const R={db:null,assets:null,user:null,owner:true,local:false,scenes:[],pngs:[],eps:[],clues:[],tg:null,tracks:[],view:'schede',draftEn:[],bPg:''};
 const DEF_LIVE=()=>({mode:'nero',sceneId:'',show:null,fight:null,music:{track:'',playing:false,vol:.8,auto:true,loop:true},counters:[],epId:'',clueId:'',clueStep:4,burst:null,sfx:null,sessionLog:[],updatedAt:0});
 let live=DEF_LIVE();
@@ -2218,7 +2281,7 @@ document.addEventListener('click',async e=>{
   if(r.ok){ R.owner=true; renderNav(); location.hash='#regia'; fromHash(); toast('Modalità master attiva su questo dispositivo'); }
   else toast(r.err==='bloccato'?'Troppi tentativi sbagliati: riprova tra 15 minuti':r.err==='rete'?'Connessione assente, riprova':'PIN errato');
 });
-function renderNav(){ $$('.vnav-slot').forEach(s=>s.innerHTML=navHtml()); $$('[data-view]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.view===R.view))); }
+function renderNav(){ document.body.classList.toggle('master',!!R.owner); try{ renderProfile(); }catch(e){} $$('.vnav-slot').forEach(s=>s.innerHTML=navHtml()); $$('[data-view]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.view===R.view))); }
 
 /* ---------- salvataggio ---------- */
 function lsR(){ try{ localStorage.setItem(LKEY,JSON.stringify({live,scenes:R.scenes,pngs:R.pngs,eps:R.eps,clues:R.clues,tg:R.tg})); }catch(e){} }
