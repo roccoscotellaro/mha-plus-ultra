@@ -1717,6 +1717,8 @@ const OUTLBL={uniform:'Uniforme scolastica',hero:'Costume da eroe',casual:'Abiti
 const imgOf=(id,s)=>((IMG[id]||{})[s]||'');
 function portraitOf(c){ const m=IMG[c.id]||{}; return m.face||m.hero||m.uniform||m.casual||c.photo||''; }
 function cropOf(c,k){ const v=(c&&c[k==='thumb'?'thumb':'faceCrop'])||{}; const n=(x,d,lo,hi)=>{x=+x;return isFinite(x)?Math.min(hi,Math.max(lo,x)):d}; return {x:n(v.x,50,0,100),y:n(v.y,0,0,100),z:n(v.z,1,1,4)}; }
+// Figurina in alto: usa l'Anteprima del master se c'è; altrimenti, se la figurina mostra il primo piano, la sua inquadratura.
+function thumbCropOf(c){ if(c&&c.thumb) return cropOf(c,'thumb'); if(c&&c.faceCrop&&imgOf(c.id,'face')) return cropOf(c,'face'); return cropOf(c,'thumb'); }
 function cropCss(cr){ return `object-position:${cr.x}% ${cr.y}%;transform:scale(${cr.z});transform-origin:${cr.x}% ${cr.y}%`; }
 function isMaster(){ try{ return typeof window.mhaOwner==='function'?!!window.mhaOwner():false; }catch(e){ return false; } }
 function renderPhoto(){ renderProfile(); }
@@ -1738,7 +1740,7 @@ function renderProfile(){
 function renderRoster(){
   const cards=store.chars.map(c=>{
     const nm=c.name||c.hero||'Senza nome', ini=(nm.trim()[0]||'?').toUpperCase();
-    const pt=portraitOf(c); const pic=pt?`<span class="phw"><img class="ph" src="${esc(pt)}" alt="" style="${cropCss(cropOf(c,'thumb'))}"></span>`:`<span class="ph ini" aria-hidden="true">${esc(ini)}</span>`;
+    const pt=portraitOf(c); const pic=pt?`<span class="phw"><img class="ph" src="${esc(pt)}" alt="" style="${cropCss(thumbCropOf(c))}"></span>`:`<span class="ph ini" aria-hidden="true">${esc(ini)}</span>`;
     return `<button class="rc" style="--rc:${/^#[0-9a-f]{6}$/i.test(c.color||"")?c.color:"var(--edge)"}" data-pick="${esc(c.id)}" aria-current="${c.id===C.id}">${pic}<span class="n">${esc(nm)}</span><span class="p">${esc(c.hero||c.quirk||'')}${c.player?' · '+esc(c.player):''}</span></button>`;
   }).join('');
   $('#roster').innerHTML=cards+`<button class="rc add" data-pick="__new">+ Nuova<br>scheda</button>`;
@@ -1843,7 +1845,7 @@ function openCrop(k){
   if(k==='thumb'&&!isMaster()){ toast('Solo il master può cambiare l\'anteprima'); return; }
   const src=k==='thumb'?portraitOf(C):imgOf(C.id,'face');
   if(!src){ toast(k==='thumb'?'Questa scheda non ha ancora un\'immagine':'Carica prima il primo piano'); return; }
-  cropK=k; cropV=cropOf(C,k);
+  cropK=k; cropV=k==='thumb'?thumbCropOf(C):cropOf(C,k);
   $('#cropTitle').textContent=k==='thumb'?'Anteprima nella barra':'Inquadra il primo piano';
   $('#cropHint').textContent=k==='thumb'?'Scegli cosa mostra la figurina in alto. Trascina per spostare, usa lo zoom per ingrandire. La vede tutto il tavolo.':'Trascina l\'immagine per spostarla e usa lo zoom per ingrandire: utile se hai caricato un\'immagine a figura intera.';
   $('#cropFrame').className='cropframe '+(k==='thumb'?'thumb':'face');
