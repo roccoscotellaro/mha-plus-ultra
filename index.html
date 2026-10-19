@@ -824,7 +824,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 /* ===== Personaggi in sovrimpressione sulla scena ===== */
 .tv-ov{position:absolute;inset:0;pointer-events:none;z-index:3}
 .tv-ovf{--pc:#2a9d8f;position:absolute;bottom:0;height:80vh;transform:translateX(-50%);transition:left .6s cubic-bezier(.2,.8,.2,1),width .6s;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
-.tv-ovf img{max-width:100%;max-height:calc(100% - 5vh);object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 0 .25vw #fff) drop-shadow(.5vw .5vw 0 var(--pc))}
+.tv-ovf img{height:calc(100% - 7vh);width:auto;max-width:none;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 0 .25vw #fff) drop-shadow(.5vw .5vw 0 var(--pc))}
 .tv-ovf .tv-ovn{margin:0 0 2.2vh;font-family:var(--f-display);font-size:2.6vw;letter-spacing:.04em;line-height:1;color:#fff;background:#07090f;border-left:.6vw solid var(--pc);padding:.5vh 1.2vw;transform:skewX(-8deg);white-space:nowrap}
 .tv-ovf.inL{animation:ovInL .7s cubic-bezier(.2,.8,.2,1) both}.tv-ovf.inR{animation:ovInR .7s cubic-bezier(.2,.8,.2,1) both}
 .tv-ovf.out{animation:ovOut .45s ease-in both}
@@ -942,7 +942,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 .rc-l.wf{right:45vw;font-size:4.3vw}
 .rc-figs{position:absolute;right:2vw;top:15vh;bottom:9vh;width:42vw;display:flex;align-items:flex-end;justify-content:center;gap:.6vw;animation:rcFig .38s cubic-bezier(.2,.9,.3,1.1) var(--d) both,rcFigOut .25s ease-in var(--o) forwards}
 .rc-figs.last{animation:rcFig .38s cubic-bezier(.2,.9,.3,1.1) var(--d) both}
-.rc-figs img{flex:1 1 0;min-width:0;max-height:100%;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 0 .2vw #fff) drop-shadow(.45vw .45vw 0 var(--pc,#ffe100))}
+.rc-figs img{flex:none;height:var(--fh,74vh);width:auto;max-width:none;margin:0 -1vw;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 0 .2vw #fff) drop-shadow(.45vw .45vw 0 var(--pc,#ffe100))}
 .rc-figs img:nth-child(2){animation-delay:.06s}
 .rc-intro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;background:#07090f;animation:rcIntro 1.7s ease-in both}
 .rc-intro b{font-family:var(--f-display);font-weight:400;font-size:11vw;line-height:.85;color:var(--tvy);text-shadow:.6vw .6vw 0 var(--tvr);transform:skewX(-8deg);animation:rcSlam .5s cubic-bezier(.2,1.5,.4,1) both}
@@ -1218,7 +1218,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 23:30</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 20/10 · 00:15</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -3181,7 +3181,7 @@ function renderTV(){
   const shown=(live.counters||[]).filter(c=>c.show); let hc='';
   if(shown.length) hc=`<div class="tv-counters${live.mode==='fight'?' f':''}">${shown.map(c=>`<div class="tv-cnt${cZero(c)?' zero':''}"><span>${esc(c.label||'')}</span><b>${cDisp(c)}${c.type==='round'?'<small> round</small>':''}</b></div>`).join('')}</div>`;
   if(!box.querySelector('#tvCntBox')){ box.innerHTML='<div class="tv-mainw"></div><div id="tvOvBox" class="tv-ov"></div><div id="tvCntBox"></div>'; box._main=null; }
-  if(box._main!==h){ box._main=h; box.querySelector('.tv-mainw').innerHTML=h; }
+  if(box._main!==h){ box._main=h; box.querySelector('.tv-mainw').innerHTML=h; fitFigs(box); }
   const cb=box.querySelector('#tvCntBox'); if(cb.innerHTML!==hc) cb.innerHTML=hc;
   renderOv(box.querySelector('#tvOvBox'));
   playMusic();
@@ -3230,7 +3230,7 @@ function tvExam(){
   const {cols,rows}=colsFor(n,10), rh=`calc((100vh - 23vh) / ${rows})`;
   return `<div class="tv-exam"><div class="ex-head"><span class="ua">U.A.</span><div><h2>Esame d'ammissione · Risultati</h2><p>雄英高校 · Prova pratica · punti dei robot</p></div></div>
     <ol class="ex-list" style="--rows:${rows};--cols:${cols};--rh:${rh}">${L.map((r,i)=>{ const pc=r.w&&r.w.pg&&/^#[0-9a-f]{6}$/i.test(r.w.color||'')?r.w.color:''; const no=/non|esclus|boccia/i.test(r.cls);
-      return `<li class="${pc?'pg':''}${r.pos===1?' top':''}${no?' no':''}" style="${pc?`--pc:${pc};`:''}--d:${(.5+(n-1-i)*.22).toFixed(2)}s"><span class="pos">${r.pos}</span>${miniHtml(r.w,r.name)}<span class="nm">${esc(r.name)}</span>${r.cls?`<span class="cls">${esc(r.cls)}</span>`:'<span></span>'}<b class="pt">${esc(String(r.pts))}<small>pt</small></b></li>`; }).join('')}</ol></div>`;
+      return `<li class="${pc?'pg':''}${r.pos===1?' top':''}${no?' no':''}" style="${pc?`--pc:${pc};`:''}--d:${(.5+(n-1-i)*.22).toFixed(2)}s"><span class="pos">${r.pos}</span>${no?'<span></span>':miniHtml(r.w,r.name)}<span class="nm">${esc(r.name)}</span>${r.cls?`<span class="cls">${esc(r.cls)}</span>`:'<span></span>'}<b class="pt">${esc(String(r.pts))}<small>pt</small></b></li>`; }).join('')}</ol></div>`;
 }
 function trCls(t){ return /▲|\+|su/i.test(t)?'up':/▼|-|giù/i.test(t)?'dn':'eq'; }
 function tvChart(){
@@ -3244,6 +3244,13 @@ function tvChart(){
       return `<div class="ch-top${r.w&&r.w.src?'':' nomini'}" style="--pc:${pc};--d:${(2.6-i*.6).toFixed(2)}s">${r.w&&r.w.src?miniHtml(r.w,r.hero):''}<div><b>${esc(r.hero)}</b>${r.real?`<small>${esc(r.real)}</small>`:''}${r.tr?`<em class="${trCls(r.tr)}">${esc(r.tr)}</em>`:''}</div><span class="rk">${esc(r.pos)}</span></div>`; }).join('')}</div>
     <ol class="ch-list" style="--rows:${Math.max(rows,8)};--cols:${cols};--rh:${rh}">${rest.map((r,i)=>{ const pc=r.w&&/^#[0-9a-f]{6}$/i.test(r.w.color||'')?r.w.color:'#3a4a80'; const on=hl&&r.hero.toLowerCase()===String(hl).toLowerCase();
       return `<li class="${on?'hl':''} nomini" style="--pc:${pc};--d:${(.4+i*.06).toFixed(2)}s"><span class="pos">${esc(r.pos)}</span><span class="nm">${esc(r.hero)}${r.real?`<small>${esc(r.real)}</small>`:''}</span><span class="trd ${trCls(r.tr)}">${esc(r.tr)}</span></li>`; }).join('')}</ol></div>`;
+}
+// stessa altezza per tutti; se non ci stanno in larghezza, si rimpiccioliscono tutti insieme
+function fitFigs(root){
+  root.querySelectorAll('.rc-figs').forEach(c=>{ const ims=[...c.querySelectorAll('img')];
+    Promise.all(ims.map(i=>i.decode?i.decode().catch(()=>{}):null)).then(()=>{ const sum=ims.reduce((a,i)=>a+(i.naturalWidth&&i.naturalHeight?i.naturalWidth/i.naturalHeight:.4),0); if(!sum) return;
+      const W=c.clientWidth||innerWidth*.42, H=c.clientHeight||innerHeight*.74, gap=-innerWidth*.02*(ims.length-1);
+      c.style.setProperty('--fh',Math.min(H,(W-gap)/sum)+'px'); }); });
 }
 function recapEnts(){
   const E=[]; const okc=c=>/^#[0-9a-f]{6}$/i.test(c||'')&&!/^#0{6}$/.test(c)?c:'';
@@ -3267,7 +3274,8 @@ function tvRecap(ep,next){
   const E=recapEnts(), cnt={};
   let t=1.75; const S=L.map(l=>{ const d=t, dur=1.2+l.length*.038; t+=dur; return {d,dur}; });
   const figs=(ents,i,last)=>{ if(!ents.length) return ''; const sel=ents.slice(0,5).map(e=>{ const k=cnt[e.key]||0; cnt[e.key]=k+1; return {src:e.pool[k%e.pool.length],color:e.color}; });
-    return `<div class="rc-figs${last?' last':''}" style="--d:${S[i].d.toFixed(2)}s;--o:${(S[i].d+S[i].dur-.25).toFixed(2)}s">${sel.map(f=>`<img src="${esc(f.src)}" alt=""${f.color?` style="--pc:${f.color}"`:''}>`).join('')}</div>`; };
+    const fh=Math.min(74,44*16/9/(sel.length*.4)).toFixed(1);
+    return `<div class="rc-figs${last?' last':''}" style="--fh:${fh}vh;--d:${S[i].d.toFixed(2)}s;--o:${(S[i].d+S[i].dur-.25).toFixed(2)}s">${sel.map(f=>`<img src="${esc(f.src)}" alt=""${f.color?` style="--pc:${f.color}"`:''}>`).join('')}</div>`; };
   const lines=L.map((l,i)=>{ const r=hlLine(l,E), last=i===L.length-1; return `<p class="rc-l${last?' last':''}${r.ents.length?' wf':''}" style="--d:${S[i].d.toFixed(2)}s;--o:${(S[i].d+S[i].dur-.25).toFixed(2)}s">${r.h}</p>${figs(r.ents,i,last)}`; }).join('');
   return `<div class="tv-rc${next?' next':''}" data-at="${live.siglaAt||0}"><div class="rc-intro"><b>Plus Ultra!</b><span>${next?'Prossimamente':'L’ultima generazione'}</span></div><p class="rc-k">${next?'Nel prossimo episodio…':'Nella puntata precedente…'}</p>${ep.title?`<p class="rc-ep">Ep. ${esc(String(ep.num??''))} · ${esc(ep.title)}</p>`:''}
     ${lines}
