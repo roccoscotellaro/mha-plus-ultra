@@ -718,6 +718,57 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tvp.light .tvp-wm,.profile.light .stage .wm{color:rgba(7,9,15,.13)}
 .profile.light .furi{color:#07090f;text-shadow:none}
 .profile.light .pcolor{color:#07090f;text-shadow:none}
+
+/* ===== Schermo: cartellino personaggio come le schede ufficiali dell'anime ===== */
+.tvo{--ink:#141414;position:absolute;inset:0;overflow:hidden;background:#f7f7f7;font-family:"Anton","Impact","Arial Narrow",sans-serif;color:var(--ink)}
+.tvo-bg{position:absolute;inset:0;background-image:conic-gradient(#e3e3e3 25%,transparent 0 50%,#e3e3e3 0 75%,transparent 0);background-size:1.5vw 1.5vw;opacity:.95}
+.tvo-band{position:absolute;left:-5%;right:-5%;background:#fbfbfb;transform:rotate(-2.2deg);box-shadow:0 0 0 .15vw #ececec}
+.tvo-band.b1{top:35%;height:21%}.tvo-band.b2{top:59%;height:10%}.tvo-band.b3{top:72%;height:15%}
+.tvo-face{position:absolute;left:0;top:5%;width:47%;height:28%;overflow:hidden;clip-path:polygon(0 9%,100% 0,100% 91%,0 100%);background:#ddd}
+.tvo-face img{width:100%;height:100%;object-fit:cover;object-position:50% 0}
+.tvo-text{position:absolute;left:4.5%;top:35%;width:50%;display:flex;flex-direction:column;gap:.6vh;z-index:3}
+.tvo.noface .tvo-text{top:16%}
+.tvo.multi .tvo-text{width:44%}
+.tvo-tag{align-self:flex-start;font-size:1.5vw;letter-spacing:.12em;color:#fff;background:var(--ink);padding:.1vh 1vw;transform:skewX(-10deg);margin-bottom:.6vh}
+.tvo-tag.foe{background:#d7263d}
+.tvo-furi{margin:0 0 -.6vh .3vw;font-family:"Noto Sans JP",sans-serif;font-weight:700;font-size:1.5vw;letter-spacing:.55em;color:var(--ink)}
+.tvo-kanji{margin:0;font-family:"Noto Sans JP","Hiragino Sans",sans-serif;font-weight:900;font-size:4.9vw;line-height:1.1;color:#ffe100;-webkit-text-stroke:.38vw var(--ink);paint-order:stroke fill;white-space:nowrap;overflow:hidden}
+.tvo-kanji small{font-size:.5em;margin-left:.2em}
+.tvo-kanji.lat{font-family:"Anton","Impact",sans-serif;font-weight:400;letter-spacing:.02em;font-size:4.8vw}
+.tvo-romaji{margin:0;font-size:2.3vw;letter-spacing:.06em;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tvo-cv{margin:1.8vh 0 1vh;font-size:2vw;letter-spacing:.04em}
+.tvo-cv b{font-weight:400;margin-right:.6vw}
+.tvo-rows{margin:0;display:flex;flex-direction:column;gap:.3vh}
+.tvo-rows div{display:flex;gap:.8vw;font-size:1.8vw;letter-spacing:.04em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tvo-rows dt{flex:none}.tvo-rows dt::after{content:" :"}
+.tvo-rows dd{margin:0;font-family:"Barlow","Segoe UI",sans-serif;font-weight:700;letter-spacing:0;overflow:hidden;text-overflow:ellipsis}
+.tvo-blurb{margin:1.2vh 0 0;max-width:46vw;font-family:"Barlow","Segoe UI",sans-serif;font-size:1.35vw;line-height:1.4;color:#3a3a3a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tvo-text:has(.tvo-rows div:nth-child(4)) .tvo-blurb{-webkit-line-clamp:1}
+.tvo-big{position:absolute;left:2.5%;bottom:-1.6vh;z-index:2;font-size:7.6vw;line-height:1;letter-spacing:.01em;color:#cfcfcf;white-space:nowrap}
+.tvo-figs{position:absolute;z-index:4;right:2%;top:2%;bottom:0;width:42%;display:flex;align-items:flex-end;justify-content:center}
+.tvo.multi .tvo-figs{width:50%}
+.tvo-figs img{display:block;height:100%;width:auto;min-width:0;flex:0 1 auto;object-fit:contain;object-position:center bottom}
+.tvo-figs img.alt{height:86%;margin-left:-3%}
+.tvo-figs[data-n="2"] img{max-width:56%}.tvo-figs[data-n="3"] img{max-width:40%}.tvo-figs[data-n="4"] img{max-width:31%}
+.tvo-noimg{position:absolute;z-index:4;right:10%;top:15%;bottom:10%;width:26%;display:grid;place-items:center;font-size:18vw;color:#dcdcdc}
+@media (prefers-reduced-motion:no-preference){.tvo-figs img{animation:tvpIn .55s ease-out both}.tvo-figs img.alt{animation-delay:.1s}.tvo-face{animation:tvoFace .5s ease-out both}.tvo-text{animation:tvpIn2 .55s ease-out both}
+  @keyframes tvoFace{from{transform:translateX(-12vw)}to{transform:none}}}
+@media (max-width:760px){.tvo-figs{width:46%}.tvo-text{width:56%}.tvo-rows div,.tvo-cv{font-size:15px}.tvo-blurb{display:none}}
+
+/* ===== Stacco di scena (eyecatch) ===== */
+.tv-eye{position:fixed;inset:0;z-index:22;pointer-events:none;overflow:hidden;display:grid;place-items:center}
+.tv-eye .ey-bg{position:absolute;inset:-10%;background:#f7f7f7;background-image:conic-gradient(#e3e3e3 25%,transparent 0 50%,#e3e3e3 0 75%,transparent 0);background-size:1.5vw 1.5vw;transform:translateX(-120%) skewX(-12deg)}
+.tv-eye .ey-band{position:absolute;left:-10%;right:-10%;top:38%;height:24%;background:#ffe100;border-block:.6vw solid #141414;transform:translateX(120%) rotate(-3deg)}
+.tv-eye .ey-txt{position:relative;text-align:center;opacity:0;transform:scale(.6)}
+.tv-eye .ey-txt b{display:block;font-family:"Bangers","Anton",sans-serif;font-weight:400;font-size:8vw;line-height:.95;letter-spacing:.03em;color:#141414;max-width:90vw;overflow-wrap:anywhere}
+.tv-eye .ey-txt span{display:inline-block;margin-top:1vh;font-family:"Anton",sans-serif;font-size:2vw;letter-spacing:.3em;color:#fff;background:#141414;padding:.3vh 1.4vw}
+.tv-eye.on .ey-bg{animation:eyBg 2.6s cubic-bezier(.7,0,.3,1) forwards}
+.tv-eye.on .ey-band{animation:eyBand 2.6s cubic-bezier(.7,0,.3,1) forwards}
+.tv-eye.on .ey-txt{animation:eyTxt 2.6s ease-out forwards}
+@keyframes eyBg{0%{transform:translateX(-120%) skewX(-12deg)}22%,78%{transform:translateX(0) skewX(-12deg)}100%{transform:translateX(120%) skewX(-12deg)}}
+@keyframes eyBand{0%,10%{transform:translateX(120%) rotate(-3deg)}30%,74%{transform:translateX(0) rotate(-3deg)}96%,100%{transform:translateX(-120%) rotate(-3deg)}}
+@keyframes eyTxt{0%,26%{opacity:0;transform:scale(.6) rotate(-3deg)}36%{opacity:1;transform:scale(1.08) rotate(-3deg)}42%,72%{opacity:1;transform:scale(1) rotate(-3deg)}82%,100%{opacity:0;transform:scale(1.3) rotate(-3deg)}}
+@media (prefers-reduced-motion:reduce){.tv-eye.on .ey-bg,.tv-eye.on .ey-band{animation:none;transform:none}.tv-eye.on .ey-txt{animation:none;opacity:1;transform:none}}
 /* crescita */
 .gh{font-family:var(--f-display);font-weight:400;font-size:21px;letter-spacing:.04em;margin:4px 0 4px}
 .grset{margin-bottom:10px}
@@ -968,11 +1019,12 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewSchermo" hidden>
   <div class="tv" id="tvStage"></div>
   <div class="tv-fx" id="tvFx" hidden></div>
+  <div class="tv-eye" id="tvEye" hidden></div>
   <div class="tv-start" id="tvStart"><div><h2>Schermo del tavolo</h2><p>Premi per avviare la musica e il pieno schermo. Poi comanda tutto dalla Regia, dal telefono o dal tablet.</p><button class="btn primary" id="tvStartBtn">Avvia lo schermo</button><p class="hint"><a href="#">Torna alle schede</a></p></div></div>
   <button class="tv-mbtn" id="tvMusicBtn" aria-label="Brani su questo dispositivo">♪</button>
   <div class="tv-panel" id="tvPanel" hidden>
     <h3>Brani su questo dispositivo</h3>
-    <p class="hint">I file restano su questo PC. Segna come "Fight" i brani da combattimento (partono da soli quando avvii un fight) e come "Effetto" i suoni brevi: sirene, esplosioni, impatti.</p>
+    <p class="hint">I file restano su questo PC. Segna come "Fight" i brani da combattimento (partono da soli quando avvii un fight), come "Effetto" i suoni brevi (sirene, esplosioni, impatti) e come "Stacco di scena" la sigletta che suona quando cambi scena.</p>
     <ul id="tvTracks"></ul>
     <button class="btn sm primary" id="tvAdd">Aggiungi mp3</button><input type="file" id="tvFiles" accept="audio/*,.mp3,.m4a,.ogg,.wav" multiple hidden>
   </div>
@@ -2462,7 +2514,7 @@ function logF(t){ live.sessionLog=(live.sessionLog||[]).concat([t]).slice(-60); 
 function trackFor(kind){ const sc=R.scenes.find(s=>s.id===live.sceneId); if(kind==='fight') return (sc&&sc.fightTrack)||((R.tracks.find(t=>t.cat==='fight')||{}).id)||''; return (sc&&sc.track)||''; }
 function autoMusic(kind){ if(!live.music.auto) return; const t=trackFor(kind); if(t){ live.music.track=t; live.music.playing=true; } }
 
-function nextTrackId(dir){ const cur=R.tracks.find(t=>t.id===live.music.track); const pool=cur?R.tracks.filter(t=>t.cat===cur.cat):R.tracks.filter(t=>t.cat!=='sfx'); if(!pool.length) return ''; const i=cur?pool.findIndex(t=>t.id===cur.id):-1; return pool[((i+dir)%pool.length+pool.length)%pool.length].id; }
+function nextTrackId(dir){ const cur=R.tracks.find(t=>t.id===live.music.track); const pool=cur?R.tracks.filter(t=>t.cat===cur.cat):R.tracks.filter(t=>t.cat!=='sfx'&&t.cat!=='stacco'); if(!pool.length) return ''; const i=cur?pool.findIndex(t=>t.id===cur.id):-1; return pool[((i+dir)%pool.length+pool.length)%pool.length].id; }
 function cMs(c){ return c.running?Math.max(0,(c.endAt||0)-Date.now()):(+c.remain||0); }
 function fmtMs(ms){ const t=Math.ceil(ms/1000), m=Math.floor(t/60), x=t%60; return m+':'+String(x).padStart(2,'0'); }
 function cDisp(c){ if(c.type==='time') return `<span class="cdown" data-cid="${esc(c.id)}">${fmtMs(cMs(c))}</span>`; return esc(String(c.value))+(c.type==='manual'&&c.max?'/'+esc(String(c.max)):''); }
@@ -2498,9 +2550,9 @@ function renderRegia(){
   // musica
   const tr=R.tracks;
   h+=`<section class="rg-box"><div class="rg-h"><h3>Musica</h3><span class="hint" style="margin:0">I brani si caricano dallo Schermo, sul dispositivo collegato alla TV.</span></div>
-    <div class="rg-row">${tr.length?`<select id="rgTrack" aria-label="Brano">${opt('','— Nessun brano —',live.music.track)}${tr.filter(t=>t.cat!=='sfx').map(t=>opt(t.id,(t.cat==='fight'?'⚔ ':'')+t.name,live.music.track)).join('')}</select>
+    <div class="rg-row">${tr.length?`<select id="rgTrack" aria-label="Brano">${opt('','— Nessun brano —',live.music.track)}${tr.filter(t=>t.cat!=='sfx'&&t.cat!=='stacco').map(t=>opt(t.id,(t.cat==='fight'?'⚔ ':'')+t.name,live.music.track)).join('')}</select>
     <button class="btn sm" data-rg="tprev" aria-label="Brano precedente">⏮</button><button class="btn sm${live.music.playing?' primary':''}" data-rg="play">${live.music.playing?'Pausa':'Play'}</button><button class="btn sm" data-rg="tnext" aria-label="Brano successivo">⏭</button>
-    <label class="rg-chk"><input type="checkbox" id="rgLoop"${live.music.loop!==false?' checked':''}> Ripeti il brano</label>
+    <label class="rg-chk"><input type="checkbox" id="rgLoop"${live.music.loop!==false?' checked':''}> Ripeti il brano</label><label class="rg-chk"><input type="checkbox" id="rgSting"${live.music.sting!==false?' checked':''}> Stacco al cambio scena</label>
     <label class="rg-vol">Volume <input type="range" id="rgVol" min="0" max="1" step="0.05" value="${live.music.vol}"></label>
     <label class="rg-chk"><input type="checkbox" id="rgAuto"${live.music.auto?' checked':''}> Cambia da sola con scene e fight</label><span class="hint" style="margin:0;flex-basis:100%">Senza "Ripeti", a fine brano parte il successivo dello stesso tipo (scena o fight).</span>`:'<p class="hint" style="margin:0">Nessun brano ancora: apri la sezione Schermo sul PC della TV e carica gli mp3 da lì.</p>'}</div></section>`;
   // contatori
@@ -2596,8 +2648,8 @@ function editorHtml(){
     <div class="rg-form">
       <label>Titolo<input id="eTitle" value="${esc(o.title||'')}" placeholder="Prova pratica: la città simulata"></label>
       <label>Sottotitolo<input id="eSub" value="${esc(o.sub||'')}" placeholder="Dieci minuti, sei isolati, i robot valgono punti"></label>
-      <label>Brano della scena<select id="eTrack">${opt('','— nessuno —',o.track)}${R.tracks.filter(t=>t.cat!=='sfx').map(t=>opt(t.id,t.name,o.track)).join('')}</select></label>
-      <label>Brano del fight<select id="eFight">${opt('','— il primo brano da fight —',o.fightTrack)}${R.tracks.filter(t=>t.cat!=='sfx').map(t=>opt(t.id,t.name,o.fightTrack)).join('')}</select></label>
+      <label>Brano della scena<select id="eTrack">${opt('','— nessuno —',o.track)}${R.tracks.filter(t=>t.cat!=='sfx'&&t.cat!=='stacco').map(t=>opt(t.id,t.name,o.track)).join('')}</select></label>
+      <label>Brano del fight<select id="eFight">${opt('','— il primo brano da fight —',o.fightTrack)}${R.tracks.filter(t=>t.cat!=='sfx'&&t.cat!=='stacco').map(t=>opt(t.id,t.name,o.fightTrack)).join('')}</select></label>
       <label>Ordine<input id="eOrder" type="number" value="${+o.order||0}"></label>
       <div class="rg-img"><div class="rg-thumb" style="${srcOf(o.img)?`background-image:url('${srcOf(o.img)}')`:''}"><span>${srcOf(o.img)?'':'Nessuna immagine'}</span></div><button class="btn sm" data-rg="eimg">Carica immagine</button></div>
     </div>
@@ -2729,6 +2781,7 @@ document.addEventListener('change',e=>{
   else if(t.id==='bPg'){ R.bPg=t.value; renderRegia(); }
   else if(t.id==='rgAuto'){ live.music.auto=t.checked; saveLive(); }
   else if(t.id==='rgLoop'){ live.music.loop=t.checked; saveLive(); }
+  else if(t.id==='rgSting'){ live.music.sting=t.checked; saveLive(); }
   else if(t.id==='rgSkip'){ live.fight.skipDown=t.checked; saveLive(); }
   else if(t.dataset.cshow){ const c=(live.counters||[]).find(x=>x.id===t.dataset.cshow); if(c){ c.show=t.checked; saveLive(); } }
   else if(t.id==='aFrom'){ atk.from=t.value; atk.pw=''; if(atk.to===atk.from) atk.to=''; atk.roll=''; atk.md=''; atk.dmg=''; renderRegia(); }
@@ -2768,7 +2821,7 @@ document.addEventListener('click',async e=>{
   else if(a==='ctime'){ const c=live.counters.find(x=>x.id===id); if(!c) return; if(c.running){ c.remain=cMs(c); c.running=false; } else { if(cMs(c)<=0) c.remain=c.total; c.endAt=Date.now()+(+c.remain||0); c.running=true; } saveLive(); }
   else if(a==='creset'){ const c=live.counters.find(x=>x.id===id); if(!c) return; c.running=false; c.remain=c.total; saveLive(); }
   else if(a==='cdel'){ live.counters=live.counters.filter(x=>x.id!==id); saveLive(); }
-  else if(a==='showscene'){ live.sceneId=id; if(live.mode!=='fight') live.mode='scena'; autoMusic(live.mode==='fight'?'fight':'scena'); saveLive(); }
+  else if(a==='showscene'){ if(live.music.sting!==false&&(id!==live.sceneId||live.mode!=='scena')){ const sc0=R.scenes.find(x=>x.id===id); live.trans={at:Date.now(),title:(sc0&&sc0.title)||''}; } live.sceneId=id; if(live.mode!=='fight') live.mode='scena'; autoMusic(live.mode==='fight'?'fight':'scena'); saveLive(); }
   else if(a==='showpg'){ live.show={t:'pg',id,look:b.dataset.look||''}; live.mode='personaggio'; saveLive(); }
   else if(a==='showpng'){ live.show={t:'png',id,look:b.dataset.look||''}; live.mode='personaggio'; saveLive(); }
   else if(a==='newscene'){ edit={col:'scene',obj:{id:rid(),_new:true,order:R.scenes.length+1}}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
@@ -2883,20 +2936,23 @@ function renderTV(){
 }
 function tvProfile(o){
   const nm=(o.name||'Senza nome').toUpperCase(), hero=(o.hero||'').toUpperCase();
-  const rows=o.rows.filter(r=>r[1]);
+  const rows=o.rows.filter(r=>r[1]), cv=o.cv&&o.cv[1]?o.cv:null;
   const figs=[o.full,...(o.others||[])].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).slice(0,4);
-  return `<div class="tvp${figs.length>1?' multi':''}${isLightCol(o.color)?' light':''}" style="--pc:${esc(/^#[0-9a-f]{6}$/i.test(o.color||'')?o.color:'#2a9d8f')}">
-    <div class="tvp-stage"><div class="tvp-wm" aria-hidden="true">${esc(nm)}</div>${figs.length?`<div class="tvp-figs" data-n="${figs.length}">${figs.map((f,i)=>`<img class="${i?'alt':''}" src="${esc(f)}" alt="">`).join('')}</div>`:`<div class="tvp-noimg" aria-hidden="true">${esc(nm[0]||'?')}</div>`}</div>
-    <div class="tvp-info">
-      ${o.tag?`<div class="tvp-tag${o.foe?' foe':''}">${esc(o.tag)}</div>`:''}
-      ${o.face?`<div class="tvp-face"><img src="${esc(o.face)}" alt="" style="${o.faceCss||''}"></div>`:''}
-      ${o.jpReading?`<p class="tvp-furi">${esc(o.jpReading)}</p>`:''}
-      ${o.jpName?`<p class="tvp-kanji">${esc(o.jpName)}</p>`:`<p class="tvp-kanji lat">${esc(hero||nm)}</p>`}
-      <p class="tvp-romaji">${esc(nm)}${hero?` <q>${esc(hero)}</q>`:''}</p>
-      ${rows.length?`<dl class="tvp-rows">${rows.map(r=>`<div><dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd></div>`).join('')}</dl>`:''}
-      ${o.blurb?`<p class="tvp-blurb">${esc(o.blurb)}</p>`:''}
+  return `<div class="tvo${figs.length>1?' multi':''}${o.face?'':' noface'}">
+    <div class="tvo-bg"></div><div class="tvo-band b1"></div><div class="tvo-band b2"></div><div class="tvo-band b3"></div>
+    ${o.face?`<div class="tvo-face"><img src="${esc(o.face)}" alt="" style="${o.faceCss||''}"></div>`:''}
+    <div class="tvo-big" aria-hidden="true">${esc(nm)}${hero?` “${esc(hero)}”`:''}</div>
+    <div class="tvo-text">
+      ${o.tag?`<div class="tvo-tag${o.foe?' foe':''}">${esc(o.tag)}</div>`:''}
+      ${o.jpReading?`<p class="tvo-furi">${esc(o.jpReading)}</p>`:''}
+      ${o.jpName?`<p class="tvo-kanji">${esc(o.jpName)}${o.jpHero?`<small>(${esc(o.jpHero)})</small>`:''}</p>`:`<p class="tvo-kanji lat">${esc(hero||nm)}</p>`}
+      <p class="tvo-romaji">${esc(nm)}${hero?` “${esc(hero)}”`:''}</p>
+      ${cv?`<p class="tvo-cv"><b>${esc(cv[0])} :</b>${esc(cv[1])}</p>`:''}
+      ${rows.length?`<dl class="tvo-rows">${rows.map(r=>`<div><dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd></div>`).join('')}</dl>`:''}
+      ${o.blurb?`<p class="tvo-blurb">${esc(o.blurb)}</p>`:''}
     </div>
-    <div class="tvp-big" aria-hidden="true">${esc(hero?hero+' · '+nm:nm)}</div></div>`;
+    ${figs.length?`<div class="tvo-figs" data-n="${figs.length}">${figs.map((f,i)=>`<img class="${i?'alt':''}" src="${esc(f)}" alt="">`).join('')}</div>`:`<div class="tvo-noimg" aria-hidden="true">${esc(nm[0]||'?')}</div>`}
+  </div>`;
 }
 const PG_LOOKS={uniform:'Uniforme',hero:'Eroe',casual:'Casual'};
 function tvPg(c,look){
@@ -2904,7 +2960,7 @@ function tvPg(c,look){
   const m=IMG[c.id]||{}; const full=(look&&m[look])||m.hero||m.uniform||m.casual||'';
   const others=['hero','uniform','casual'].map(k=>m[k]).filter(v=>v&&v!==full);
   return tvProfile({name:c.name,hero:c.hero,color:c.color,full,others,face:m.face||'',faceCss:cropCss(cropOf(c,'face')),jpName:c.jpName,jpReading:c.jpReading,
-    tag:'Classe '+(c.classe||'1-A'),rows:[['Giocatore',c.player],['Compleanno',c.birthday],['Altezza',c.height],['Quirk',c.quirk],['Gli piace',c.likes]],blurb:c.blurb});
+    tag:'Classe '+(c.classe||'1-A'),cv:['Giocatore',c.player],rows:[['Compleanno',c.birthday],['Altezza',c.height],['Quirk',c.quirk],['Gli piace',c.likes]],blurb:c.blurb});
 }
 function tvPng(p,lid){
   if(!p) return '';
@@ -2930,7 +2986,7 @@ async function publishTracks(){
 }
 function renderTrackPanel(){
   const el=$('#tvTracks'); if(!el) return;
-  el.innerHTML=localTracks.length?localTracks.map(t=>`<li><span>${esc(t.name)}</span><select data-tcat="${esc(t.id)}" aria-label="Tipo di ${esc(t.name)}">${opt('scena','Scena',t.cat)}${opt('fight','Fight',t.cat)}${opt('sfx','Effetto',t.cat)}</select><button class="btn sm ghost" data-tdel="${esc(t.id)}">Togli</button></li>`).join(''):'<li class="hint">Nessun brano su questo dispositivo.</li>';
+  el.innerHTML=localTracks.length?localTracks.map(t=>`<li><span>${esc(t.name)}</span><select data-tcat="${esc(t.id)}" aria-label="Tipo di ${esc(t.name)}">${opt('scena','Scena',t.cat)}${opt('fight','Fight',t.cat)}${opt('sfx','Effetto',t.cat)}${opt('stacco','Stacco di scena',t.cat)}</select><button class="btn sm ghost" data-tdel="${esc(t.id)}">Togli</button></li>`).join(''):'<li class="hint">Nessun brano su questo dispositivo.</li>';
 }
 const PL=[new Audio(),new Audio()]; PL.forEach(a=>{a.loop=true;a.preload='auto'; a.addEventListener('ended',()=>{ if(a!==PL[pi]||live.music.loop!==false) return; const t=nextTrackId(1); if(!t||t===curTrack){ a.currentTime=0; a.play().catch(()=>{}); return; } if(R.owner||R.local){ live.music.track=t; saveLive(); } }); });
 let pi=0, curTrack='', urls={};
@@ -2949,7 +3005,7 @@ async function playMusic(){
   try{ await a.play(); fade(a,vol,1500); }catch(e){ $('#tvStart').hidden=false; }
 }
 function initTV(){
-  $('#tvStartBtn').onclick=async()=>{ started=true; lastBurst=live.burst&&live.burst.at; lastSfx=live.sfx&&live.sfx.at; $('#tvStart').hidden=true; try{ await document.documentElement.requestFullscreen(); }catch(e){} curTrack='__'; playMusic(); };
+  $('#tvStartBtn').onclick=async()=>{ started=true; lastBurst=live.burst&&live.burst.at; lastSfx=live.sfx&&live.sfx.at; lastTrans=live.trans&&live.trans.at; $('#tvStart').hidden=true; try{ await document.documentElement.requestFullscreen(); }catch(e){} curTrack='__'; playMusic(); };
   $('#tvMusicBtn').onclick=()=>{ const p=$('#tvPanel'); p.hidden=!p.hidden; };
   $('#tvAdd').onclick=()=>$('#tvFiles').click();
   $('#tvFiles').onchange=async e=>{ const fs=Array.from(e.target.files||[]); e.target.value='';
@@ -2963,7 +3019,7 @@ function initTV(){
 setInterval(()=>{ $$('.cdown').forEach(el=>{ const c=(live.counters||[]).find(x=>x.id===el.dataset.cid); if(!c) return; const ms=cMs(c); el.textContent=fmtMs(ms); const box=el.closest('.tv-cnt,.rg-li'); if(box) box.classList.toggle('zero',ms<=0); }); },500);
 
 /* effetti sulla TV: colpo speciale e suoni */
-let lastBurst=null, lastSfx=null, fxTimer=0;
+let lastBurst=null, lastSfx=null, fxTimer=0, lastTrans=null, eyeTimer=0;
 function sfxPlay(id,vol){ const t=localTracks.find(x=>x.id===id); if(!t) return; urls[id]=urls[id]||URL.createObjectURL(t.blob); const a=new Audio(urls[id]); a.volume=Math.min(1,(vol||.8)+.1); a.play().catch(()=>{}); }
 function checkFx(){
   if(R.view!=='schermo'||!started) return;
@@ -2975,6 +3031,13 @@ function checkFx(){
     el.hidden=false; void el.offsetWidth; el.classList.add('on');
     if(b.sfx) sfxPlay(b.sfx,live.music.vol);
     clearTimeout(fxTimer); fxTimer=setTimeout(()=>{ el.classList.remove('on'); setTimeout(()=>{ el.hidden=true; },400); },b.kind==='fant'?2400:3400);
+  } }
+  const tr=live.trans;
+  if(tr&&tr.at&&tr.at!==lastTrans){ lastTrans=tr.at; if(Date.now()-tr.at<8000){
+    const el=$('#tvEye'); el.innerHTML=`<div class="ey-bg"></div><div class="ey-band"></div><div class="ey-txt"><b>${esc(tr.title||'')}</b><span>PLUS ULTRA</span></div>`;
+    el.hidden=false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+    const st=localTracks.filter(x=>x.cat==='stacco'); if(st.length){ const pick=st[Math.floor(Math.random()*st.length)]; const m=PL[pi], v=+live.music.vol||.8; if(curTrack&&!m.paused){ fade(m,v*.15,250); setTimeout(()=>fade(m,v,900),2600); } sfxPlay(pick.id,v); }
+    clearTimeout(eyeTimer); eyeTimer=setTimeout(()=>{ el.classList.remove('on'); el.hidden=true; },2700);
   } }
   const s=live.sfx;
   if(s&&s.at&&s.at!==lastSfx){ lastSfx=s.at; if(Date.now()-s.at<10000) sfxPlay(s.id,live.music.vol); }
