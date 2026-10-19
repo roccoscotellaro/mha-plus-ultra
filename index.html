@@ -755,6 +755,30 @@ body.tvmode{overflow:hidden;background:#07090f}
   @keyframes tvoFace{from{transform:translateX(-12vw)}to{transform:none}}}
 @media (max-width:760px){.tvo-figs{width:46%}.tvo-text{width:56%}.tvo-rows div,.tvo-cv{font-size:15px}.tvo-blurb{display:none}}
 
+
+/* colori del personaggio sul cartellino */
+.tvo{--pc:#2a9d8f;background:var(--pc);color:#fff}
+.tvo-bg{background-image:conic-gradient(rgba(255,255,255,.14) 25%,transparent 0 50%,rgba(255,255,255,.14) 0 75%,transparent 0);opacity:1}
+.tvo-band{background:rgba(255,255,255,.14);box-shadow:none}
+.tvo-face{background:rgba(0,0,0,.2);box-shadow:none}
+.tvo-text{text-shadow:.18vw .18vw 0 rgba(7,9,15,.85)}
+.tvo-furi{color:#fff}
+.tvo-tag{background:#ffd02a;color:#141414;text-shadow:none;box-shadow:.3vw .3vw 0 #141414}
+.tvo-tag.foe{background:#d7263d;color:#fff}
+.tvo-kanji{text-shadow:.45vw .45vw 0 #141414}
+.tvo-blurb{color:#fff;font-weight:600}
+.tvo-big{color:rgba(255,255,255,.26)}
+.tvo-noimg{color:rgba(255,255,255,.35)}
+.tvo-figs img{filter:drop-shadow(.6vw .6vw 0 rgba(7,9,15,.45))}
+/* colori chiari: testo scuro, nome bianco */
+.tvo.light{color:#141414}
+.tvo.light .tvo-text{text-shadow:none}
+.tvo.light .tvo-furi{color:#141414}
+.tvo.light .tvo-kanji{color:#fff}
+.tvo.light .tvo-tag:not(.foe){background:#141414;color:#ffd02a;box-shadow:.3vw .3vw 0 rgba(255,255,255,.6)}
+.tvo.light .tvo-blurb{color:#2a2a2a}
+.tvo.light .tvo-big{color:rgba(20,20,20,.16)}
+
 /* ===== Stacco di scena (eyecatch) ===== */
 .tv-eye{position:fixed;inset:0;z-index:22;pointer-events:none;overflow:hidden;display:grid;place-items:center}
 .tv-eye .ey-bg{position:absolute;inset:-10%;background:#f7f7f7;background-image:conic-gradient(#e3e3e3 25%,transparent 0 50%,#e3e3e3 0 75%,transparent 0);background-size:1.5vw 1.5vw;transform:translateX(-120%) skewX(-12deg)}
@@ -2938,7 +2962,8 @@ function tvProfile(o){
   const nm=(o.name||'Senza nome').toUpperCase(), hero=(o.hero||'').toUpperCase();
   const rows=o.rows.filter(r=>r[1]), cv=o.cv&&o.cv[1]?o.cv:null;
   const figs=[o.full,...(o.others||[])].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).slice(0,4);
-  return `<div class="tvo${figs.length>1?' multi':''}${o.face?'':' noface'}">
+  const col=/^#[0-9a-f]{6}$/i.test(o.color||'')?o.color:'#2a9d8f';
+  return `<div class="tvo${figs.length>1?' multi':''}${o.face?'':' noface'}${isLightCol(col)?' light':''}" style="--pc:${esc(col)}">
     <div class="tvo-bg"></div><div class="tvo-band b1"></div><div class="tvo-band b2"></div><div class="tvo-band b3"></div>
     ${o.face?`<div class="tvo-face"><img src="${esc(o.face)}" alt="" style="${o.faceCss||''}"></div>`:''}
     <div class="tvo-big" aria-hidden="true">${esc(nm)}${hero?` “${esc(hero)}”`:''}</div>
