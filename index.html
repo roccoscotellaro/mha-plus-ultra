@@ -705,6 +705,19 @@ body.tvmode{overflow:hidden;background:#07090f}
 @media (max-width:760px){.tvp{grid-template-columns:1fr;grid-template-rows:48% minmax(0,1fr) auto}.tvp-info{grid-row:2;grid-column:1;padding:12px 16px}.tvp-stage{grid-row:1}
   .tvp-rows dt,.tvp-rows dd,.tvp-blurb{font-size:14px}.tvp-rows div{grid-template-columns:96px minmax(0,1fr)}.tvp-face{display:none}.tvp-big{grid-row:3}}
 
+
+/* sfondi chiari: nomi bianchi con contorno nero, etichette scure */
+.tvp.light .tvp-kanji,.profile.light .kanji{color:#fff}
+.tvp.light .tvp-romaji q{color:#fff}
+.tvp.light .tvp-tag:not(.foe){background:#07090f;color:#ffd02a;box-shadow:.3vw .3vw 0 rgba(255,255,255,.6)}
+.tvp.light .tvp-rows{border-top-color:#07090f}
+.tvp.light .tvp-rows div{border-bottom-color:#07090f}
+.tvp.light .tvp-rows dt{color:#07090f;text-shadow:none}
+.tvp.light .tvp-rows dd{color:#07090f;text-shadow:none}
+.tvp.light .tvp-furi{color:#07090f;text-shadow:none}
+.tvp.light .tvp-wm,.profile.light .stage .wm{color:rgba(7,9,15,.13)}
+.profile.light .furi{color:#07090f;text-shadow:none}
+.profile.light .pcolor{color:#07090f;text-shadow:none}
 /* crescita */
 .gh{font-family:var(--f-display);font-weight:400;font-size:21px;letter-spacing:.04em;margin:4px 0 4px}
 .grset{margin-bottom:10px}
@@ -1783,12 +1796,14 @@ function portraitOf(c){ const m=IMG[c.id]||{}; return m.face||m.hero||m.uniform|
 function cropOf(c,k){ const v=(c&&c[k==='thumb'?'thumb':'faceCrop'])||{}; const n=(x,d,lo,hi)=>{x=+x;return isFinite(x)?Math.min(hi,Math.max(lo,x)):d}; return {x:n(v.x,50,0,100),y:n(v.y,0,0,100),z:n(v.z,1,1,4)}; }
 // Figurina in alto: usa l'Anteprima del master se c'è; altrimenti, se la figurina mostra il primo piano, la sua inquadratura.
 function thumbCropOf(c){ if(c&&c.thumb) return cropOf(c,'thumb'); if(c&&c.faceCrop&&imgOf(c.id,'face')) return cropOf(c,'face'); return cropOf(c,'thumb'); }
+// colore chiaro (giallo, rosa chiaro, bianco...): il giallo dei nomi non si leggerebbe
+function isLightCol(hex){ const m=/^#?([0-9a-f]{6})$/i.exec(hex||''); if(!m) return false; const n=parseInt(m[1],16), r=(n>>16&255)/255, g=(n>>8&255)/255, b=(n&255)/255; const f=c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4); const L=.2126*f(r)+.7152*f(g)+.0722*f(b); const mx=Math.max(r,g,b), mn=Math.min(r,g,b); let h=0; if(mx>mn){ h=mx===r?((g-b)/(mx-mn))%6:mx===g?(b-r)/(mx-mn)+2:(r-g)/(mx-mn)+4; h=(h*60+360)%360; } const warm=mx-mn>.25&&h>=18&&h<=75; return L>.42||(warm&&L>.28); }
 function cropCss(cr){ return `object-position:${cr.x}% ${cr.y}%;transform:scale(${cr.z});transform-origin:${cr.x}% ${cr.y}%`; }
 function isMaster(){ try{ return typeof window.mhaOwner==='function'?!!window.mhaOwner():false; }catch(e){ return false; } }
 function renderPhoto(){ renderProfile(); }
 function renderProfile(){
   const p=$('#profile'); const col=/^#[0-9a-f]{6}$/i.test(C.color||'')?C.color:'#2a9d8f';
-  p.style.setProperty('--pc',col);
+  p.style.setProperty('--pc',col); p.classList.toggle('light',isLightCol(col));
   const nm=(C.name||'Senza nome').toUpperCase();
   $('#pRomaji').textContent=nm+(C.hero?' "'+C.hero.toUpperCase()+'"':'');
   $('#pWm').textContent=nm; $('#pBig').textContent=nm;
@@ -2870,7 +2885,7 @@ function tvProfile(o){
   const nm=(o.name||'Senza nome').toUpperCase(), hero=(o.hero||'').toUpperCase();
   const rows=o.rows.filter(r=>r[1]);
   const figs=[o.full,...(o.others||[])].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).slice(0,4);
-  return `<div class="tvp${figs.length>1?' multi':''}" style="--pc:${esc(/^#[0-9a-f]{6}$/i.test(o.color||'')?o.color:'#2a9d8f')}">
+  return `<div class="tvp${figs.length>1?' multi':''}${isLightCol(o.color)?' light':''}" style="--pc:${esc(/^#[0-9a-f]{6}$/i.test(o.color||'')?o.color:'#2a9d8f')}">
     <div class="tvp-stage"><div class="tvp-wm" aria-hidden="true">${esc(nm)}</div>${figs.length?`<div class="tvp-figs" data-n="${figs.length}">${figs.map((f,i)=>`<img class="${i?'alt':''}" src="${esc(f)}" alt="">`).join('')}</div>`:`<div class="tvp-noimg" aria-hidden="true">${esc(nm[0]||'?')}</div>`}</div>
     <div class="tvp-info">
       ${o.tag?`<div class="tvp-tag${o.foe?' foe':''}">${esc(o.tag)}</div>`:''}
