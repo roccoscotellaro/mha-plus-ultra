@@ -290,6 +290,26 @@ body.master .only-master{display:inline-flex!important}
 .face img{object-position:50% 0}
 .tv-turn img,.tv-ph img,.rg-pc img,.fx-face,.tv-face img{object-position:50% 0}
 .cropdlg{width:min(600px,96vw)}
+.rg-fold{border:2px solid var(--line);margin-bottom:8px;background:var(--card)}
+.rg-fold>summary{display:flex;gap:10px;align-items:center;padding:8px 10px;cursor:pointer;font-family:var(--f-display);font-size:19px;letter-spacing:.04em;list-style:none}
+.rg-fold>summary::-webkit-details-marker{display:none}
+.rg-fold>summary::before{content:"▸";font-size:14px;transition:transform .15s}
+.rg-fold[open]>summary::before{transform:rotate(90deg)}
+.rg-fold>summary small{font-family:var(--f-body);font-size:12px;color:var(--muted);background:var(--paper);border:1px solid var(--line);padding:0 7px}
+.rg-fold>.rg-list{padding:0 8px 8px}
+.rg-mini{width:38px;height:50px;flex:none;overflow:hidden;border:2px solid var(--edge);background:var(--blue-soft);display:grid;place-items:center;font-family:var(--f-display);color:var(--muted)}
+.rg-mini img{width:100%;height:100%;object-fit:cover;object-position:50% 0}
+.rg-li .rg-acts .btn.on{background:var(--banner);color:var(--banner-fg)}
+.rg-looks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.rg-look{border:2px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:6px;background:var(--paper);min-width:0}
+.rg-look.def{border-color:var(--red)}
+.rg-look .rg-thumb.tall{max-width:none;width:100%}
+.rg-look input[type=text]{width:100%}
+.rg-look .rg-chk{font-size:12.5px}
+.rg-sec{grid-column:1/-1;font-family:var(--f-display);font-size:18px;letter-spacing:.05em;border-top:2px dashed var(--line);padding-top:8px;margin-top:4px;color:var(--ink)}
+.rg-faceprev{width:240px;max-width:100%;aspect-ratio:16/9;overflow:hidden;border:2px solid var(--edge);background:repeating-linear-gradient(135deg,var(--blue-soft) 0 10px,var(--card) 10px 20px);display:grid;place-items:center;color:var(--muted);font-size:13px}
+.rg-faceprev img,.rg-thprev img{width:100%;height:100%;object-fit:cover}
+.rg-thprev{width:90px;aspect-ratio:3/4;overflow:hidden;border:2px solid var(--edge);background:var(--blue-soft);display:grid;place-items:center;color:var(--muted);font-size:12px;text-align:center}
 .cropframe{position:relative;overflow:hidden;margin:0 auto 12px;border:3px solid var(--edge);background:repeating-linear-gradient(135deg,var(--blue-soft) 0 10px,var(--card) 10px 20px);touch-action:none;cursor:grab;user-select:none}
 .cropframe.thumb{width:min(240px,70vw);aspect-ratio:3/4}
 .cropframe.face{width:100%;aspect-ratio:16/9}
@@ -1844,18 +1864,25 @@ $('#imgIn').onchange=async e=>{
 };
 
 /* ---------- inquadratura immagini ---------- */
-const cropDlg=$('#cropDlg'); let cropK='face', cropV={x:50,y:0,z:1}, cropDrag=null;
+const cropDlg=$('#cropDlg'); let cropK='face', cropV={x:50,y:0,z:1}, cropDrag=null, cropCb=null;
 function cropApply(){ $('#cropImg').style.cssText=cropCss(cropV); $('#cropZoom').value=cropV.z; $('#cropZv').textContent=(+cropV.z).toFixed(1).replace(/\.0$/,'')+'×'; }
+function cropOpen(o){
+  cropK=o.kind; cropV=Object.assign({x:50,y:0,z:1},o.val||{}); cropCb=o.save||null;
+  $('#cropTitle').textContent=o.title||'Inquadratura';
+  $('#cropHint').textContent=o.hint||'Trascina l\'immagine per spostarla e usa lo zoom per ingrandire.';
+  $('#cropFrame').className='cropframe '+(o.kind==='thumb'?'thumb':'face');
+  $('#cropImg').src=o.src; cropApply();
+  if(typeof cropDlg.showModal==='function') cropDlg.showModal(); else cropDlg.setAttribute('open','');
+}
+window.cropOpen=cropOpen;
 function openCrop(k){
   if(k==='thumb'&&!isMaster()){ toast('Solo il master può cambiare l\'anteprima'); return; }
   const src=k==='thumb'?portraitOf(C):imgOf(C.id,'face');
   if(!src){ toast(k==='thumb'?'Questa scheda non ha ancora un\'immagine':'Carica prima il primo piano'); return; }
-  cropK=k; cropV=k==='thumb'?thumbCropOf(C):cropOf(C,k);
-  $('#cropTitle').textContent=k==='thumb'?'Anteprima nella barra':'Inquadra il primo piano';
-  $('#cropHint').textContent=k==='thumb'?'Scegli cosa mostra la figurina in alto. Trascina per spostare, usa lo zoom per ingrandire. La vede tutto il tavolo.':'Trascina l\'immagine per spostarla e usa lo zoom per ingrandire: utile se hai caricato un\'immagine a figura intera.';
-  $('#cropFrame').className='cropframe '+(k==='thumb'?'thumb':'face');
-  $('#cropImg').src=src; cropApply();
-  if(typeof cropDlg.showModal==='function') cropDlg.showModal(); else cropDlg.setAttribute('open','');
+  cropOpen({kind:k, src, val:k==='thumb'?thumbCropOf(C):cropOf(C,k),
+    title:k==='thumb'?'Anteprima nella barra':'Inquadra il primo piano',
+    hint:k==='thumb'?'Scegli cosa mostra la figurina in alto. Trascina per spostare, usa lo zoom per ingrandire. La vede tutto il tavolo.':'Trascina l\'immagine per spostarla e usa lo zoom per ingrandire: utile se hai caricato un\'immagine a figura intera.',
+    save:v=>{ if(k==='thumb'&&!isMaster()) return; C[k==='thumb'?'thumb':'faceCrop']=v; renderProfile(); renderRoster(); changed(); toast(k==='thumb'?'Anteprima aggiornata':'Primo piano inquadrato'); }});
 }
 $('#cropZoom').oninput=e=>{ cropV.z=+e.target.value; cropApply(); };
 $('#cropFrame').addEventListener('pointerdown',e=>{ cropDrag={px:e.clientX,py:e.clientY,x:cropV.x,y:cropV.y}; e.currentTarget.setPointerCapture(e.pointerId); });
@@ -1871,11 +1898,7 @@ $('#cropFrame').addEventListener('wheel',e=>{ e.preventDefault(); cropV.z=Math.m
 $('#cropReset').onclick=()=>{ cropV={x:50,y:0,z:1}; cropApply(); };
 $('#cropCancel').onclick=$('#cropClose').onclick=()=>cropDlg.close();
 cropDlg.addEventListener('click',e=>{ if(e.target===cropDlg) cropDlg.close(); });
-$('#cropOk').onclick=()=>{
-  if(cropK==='thumb'&&!isMaster()){ cropDlg.close(); return; }
-  C[cropK==='thumb'?'thumb':'faceCrop']={x:cropV.x,y:cropV.y,z:+cropV.z};
-  cropDlg.close(); renderProfile(); renderRoster(); changed(); toast(cropK==='thumb'?'Anteprima aggiornata':'Primo piano inquadrato');
-};
+$('#cropOk').onclick=()=>{ const cb=cropCb, v={x:cropV.x,y:cropV.y,z:+cropV.z}; cropDlg.close(); if(cb) cb(v); };
 
 /* ---------- dialogo poteri / tratti / tag ---------- */
 const dlg=$('#dlg');
@@ -2345,6 +2368,16 @@ async function uploadImg(file,maxSide,keepAlpha){
 /* ---------- partecipanti ---------- */
 function statsOf(c){ const s=C; C=c; try{ return derive(); } finally { C=s; } }
 function pngOf(id){ return R.pngs.find(p=>p.id===id)||null; }
+/* PNG: aspetti personalizzati (uniforme, costume, forma base...), primo piano con inquadratura, cartelle */
+const LOOK_SUG=['Uniforme scolastica','Costume da eroe','Abiti casual','Forma base','Trasformato','In borghese','Divisa da lavoro'];
+const NOFOLD='Senza cartella';
+function looksOf(p){ if(!p) return []; if(Array.isArray(p.looks)) return p.looks; return p.img?[{id:'l0',label:'Aspetto',img:p.img}]:[]; }
+function lookOf(p,lid){ const L=looksOf(p).filter(l=>l&&l.img); return L.find(l=>l.id===lid)||L.find(l=>l.id===p.look)||L[0]||null; }
+function pngThumb(p){ if(!p) return null; const f=srcOf(p.face); if(f) return {src:f,crop:p.thumb?cropOf(p,'thumb'):cropOf(p,'face')}; const l=lookOf(p); return l?{src:srcOf(l.img),crop:cropOf(p,'thumb')}:null; }
+function folderOf(p){ return String((p&&p.folder)||'').trim()||NOFOLD; }
+function foldersAll(){ return [...new Set(R.pngs.map(folderOf))].sort((a,b)=>a===NOFOLD?1:b===NOFOLD?-1:a.localeCompare(b,'it')); }
+let FOLDS={}; try{ FOLDS=JSON.parse(localStorage.getItem('mha-rg-folds')||'{}')||{}; }catch(e){}
+document.addEventListener('toggle',e=>{ const d=e.target; if(d&&d.classList&&d.classList.contains('rg-fold')){ FOLDS[d.dataset.fold]=d.open; try{ localStorage.setItem('mha-rg-folds',JSON.stringify(FOLDS)); }catch(_){} } },true);
 function part(key){
   if(!key) return null;
   if(key.startsWith('pg:')){
@@ -2354,7 +2387,7 @@ function part(key){
   const e=((live.fight&&live.fight.enemies)||[]).find(x=>x.k===key.slice(3)); if(!e) return null;
   const p=pngOf(e.png)||{}; const ab=Object.assign({M:0,A:0,R:0,V:0,E:0,L:0},p.ab||{}); const rank=+p.rank||1;
   const def={},mult={}; ABK.forEach(k=>{ def[k]=10+(+ab[k]||0); mult[k]=rank+(+((p.mb||{})[k])||0); });
-  return {key,kind:p.kind||'nemico',name:e.name,short:e.name,img:srcOf(p.img),hp:e.hp,hpMax:e.hpMax,fc:e.fc,fcMax:e.fcMax,def,mult,ab,dr:+p.dr||0,fdr:0,conds:e.conds||[],color:p.color||'#5b6478'};
+  return {key,kind:p.kind||'nemico',name:e.name,short:e.name,img:((pngThumb(p)||{}).src||''),hp:e.hp,hpMax:e.hpMax,fc:e.fc,fcMax:e.fcMax,def,mult,ab,dr:+p.dr||0,fdr:0,conds:e.conds||[],color:p.color||'#5b6478'};
 }
 function status(p){ if(!p.hpMax) return ''; const r=p.hp/p.hpMax; return p.hp<=0?'A terra':r>=.999?'Illeso':r>.5?'Ferito':r>.25?'Grave':'Allo stremo'; }
 function setPool(key,pool,val){
@@ -2459,13 +2492,23 @@ function renderRegia(){
   // personaggi
   h+=`<section class="rg-box"><div class="rg-h"><h3>Personaggi</h3><button class="btn sm primary" data-rg="newpng">+ Nuovo PNG o nemico</button></div>
     <div class="rg-sub">Giocanti</div><div class="rg-chips">${store.chars.map(c=>`<button class="rg-pc${live.show&&live.show.t==='pg'&&live.show.id===c.id&&live.mode==='personaggio'?' on':''}" style="--pc:${esc(c.color||'#2a9d8f')}" data-rg="showpg" data-id="${esc(c.id)}">${portraitOf(c)?`<img src="${esc(portraitOf(c))}" alt="">`:''}<span>${esc(c.name||c.hero||'PG')}</span></button>`).join('')}</div>
-    <div class="rg-sub">PNG e nemici</div><div class="rg-list">${R.pngs.map(p=>`<div class="rg-li"><span class="rg-dot" style="background:${esc(p.color||'#5b6478')}"></span><b>${esc(p.name)}</b><small>${esc({nemico:'Nemico',alleato:'Alleato',png:'PNG'}[p.kind]||'PNG')}${p.hpMax?' · Rank '+(p.rank||1)+' · Salute '+p.hpMax:''}</small>
-      <span class="rg-acts"><button class="btn sm" data-rg="showpng" data-id="${esc(p.id)}">Mostra</button><button class="btn sm ghost" data-rg="editpng" data-id="${esc(p.id)}">Modifica</button></span></div>`).join('')||'<p class="empty">Nessun PNG.</p>'}</div></section>`;
+    <div class="rg-sub">PNG e nemici</div>${pngFoldersHtml()}</section>`;
   // editor
   if(edit) h+=editorHtml();
   // fight
   h+=fightHtml();
   $('#rgBody').innerHTML=h;
+}
+function pngRowHtml(p){
+  const th=pngThumb(p), L=looksOf(p).filter(l=>l.img), sh=live.show&&live.show.t==='png'&&live.show.id===p.id&&live.mode==='personaggio';
+  const mini=`<span class="rg-mini">${th?`<img src="${esc(th.src)}" alt="" style="${cropCss(th.crop)}">`:esc((p.name||'?')[0].toUpperCase())}</span>`;
+  const shows=L.length>1?L.map(l=>{ const on=sh&&(live.show.look||((lookOf(p)||{}).id))===l.id; return `<button class="btn sm${on?' on':''}" data-rg="showpng" data-id="${esc(p.id)}" data-look="${esc(l.id)}" title="Mostra sullo schermo">${esc(l.label||'Aspetto')}</button>`; }).join(''):`<button class="btn sm${sh?' on':''}" data-rg="showpng" data-id="${esc(p.id)}">Mostra</button>`;
+  return `<div class="rg-li">${mini}<span class="rg-dot" style="background:${esc(p.color||'#5b6478')}"></span><b>${esc(p.name)}</b><small>${esc({nemico:'Nemico',alleato:'Alleato',png:'PNG'}[p.kind]||'PNG')}${p.hero?' · '+esc(p.hero):''}${p.hpMax?' · Rank '+(p.rank||1)+' · Salute '+p.hpMax:''}</small>
+    <span class="rg-acts">${shows}<button class="btn sm ghost" data-rg="editpng" data-id="${esc(p.id)}">Modifica</button></span></div>`;
+}
+function pngFoldersHtml(){
+  if(!R.pngs.length) return '<p class="empty">Nessun PNG.</p>';
+  return foldersAll().map(f=>{ const L=R.pngs.filter(p=>folderOf(p)===f); return `<details class="rg-fold" data-fold="${esc(f)}"${FOLDS[f]===false?'':' open'}><summary><b>📁 ${esc(f)}</b><small>${L.length}</small></summary><div class="rg-list">${L.map(pngRowHtml).join('')}</div></details>`; }).join('');
 }
 function editorHtml(){
   const o=edit.obj;
@@ -2496,12 +2539,41 @@ function editorHtml(){
       <div class="rg-img"><div class="rg-thumb" style="${srcOf(o.img)?`background-image:url('${srcOf(o.img)}')`:''}"><span>${srcOf(o.img)?'':'Nessuna immagine'}</span></div><button class="btn sm" data-rg="eimg">Carica immagine</button></div>
     </div>
     <div class="rg-acts"><button class="btn primary" data-rg="saveedit">Salva scena</button>${o._new?'':`<button class="btn ghost" data-rg="deledit">Elimina</button>`}</div></section>`;
+  const looks=o.looks||[], th=pngThumb(o), fsrc=srcOf(o.face);
+  const defId=(lookOf(o)||{}).id;
   return `<section class="rg-box rg-edit" id="rgEdit"><div class="rg-h"><h3>${o._new?'Nuovo PNG':'Modifica PNG'}</h3><button class="btn sm ghost" data-rg="closeedit">Chiudi</button></div>
+    <datalist id="dlFolders">${foldersAll().filter(f=>f!==NOFOLD).map(f=>`<option value="${esc(f)}">`).join('')}<option value="Classe 1-A"><option value="Professori"><option value="Pro Hero"><option value="Villain"><option value="Civili"></datalist>
+    <datalist id="dlLooks">${LOOK_SUG.map(l=>`<option value="${esc(l)}">`).join('')}</datalist>
     <div class="rg-form">
+      <div class="rg-sec">Identità</div>
       <label>Nome<input id="eName" value="${esc(o.name||'')}"></label>
+      <label>Nome da eroe o da villain<input id="eHero" value="${esc(o.hero||'')}" placeholder="facoltativo"></label>
+      <label>Cartella<input id="eFolder" list="dlFolders" value="${esc(o.folder||'')}" placeholder="es. Villain, Pro Hero, Classe 1-A"></label>
       <label>Tipo<select id="eKind">${opt('nemico','Nemico',o.kind)}${opt('alleato','Alleato',o.kind)}${opt('png','PNG (solo da mostrare)',o.kind)}</select></label>
-      <label>Quirk o descrizione breve<input id="eQuirk" value="${esc(o.quirk||'')}"></label>
+      <label>Quirk<input id="eQuirk" value="${esc(o.quirk||'')}"></label>
       <label>Colore<input id="eColor" type="color" value="${esc(o.color||'#5b6478')}"></label>
+      <label>Nome giapponese<input id="eJp" value="${esc(o.jpName||'')}" placeholder="名前"></label>
+      <label>Lettura in kana<input id="eJpR" value="${esc(o.jpReading||'')}"></label>
+      <label>Compleanno<input id="eBirth" value="${esc(o.birthday||'')}"></label>
+      <label>Altezza<input id="eHeight" value="${esc(o.height||'')}"></label>
+      <label class="w2">Gli piace<input id="eLikes" value="${esc(o.likes||'')}"></label>
+      <label class="w2">Testo da mostrare ai giocatori<textarea id="ePub" rows="2">${esc(o.pub||'')}</textarea></label>
+      <div class="rg-sec">Immagini</div>
+      <div class="rg-img" style="grid-column:1/-1">
+        <div><div class="rg-faceprev">${fsrc?`<img src="${esc(fsrc)}" alt="" style="${cropCss(cropOf(o,'face'))}">`:'Primo piano'}</div>
+          <div class="rg-acts" style="margin-top:6px"><button class="btn sm" data-rg="eface">Carica primo piano</button>${fsrc?`<button class="btn sm" data-rg="cropface">Inquadra</button><button class="btn sm ghost" data-rg="rmface">Togli</button>`:''}</div></div>
+        <div><div class="rg-thprev">${th?`<img src="${esc(th.src)}" alt="" style="${cropCss(th.crop)}">`:'Figurina'}</div>
+          <div class="rg-acts" style="margin-top:6px">${th?`<button class="btn sm" data-rg="cropthumb">Inquadra figurina</button>`:''}</div></div>
+      </div>
+      <p class="hint" style="grid-column:1/-1;margin:0">Aspetti: crea quelli che servono a questo personaggio (uniforme, costume, forma base, trasformato...). Il predefinito è quello che va sullo schermo quando premi Mostra.</p>
+      <div class="rg-looks" style="grid-column:1/-1">${looks.map((l,i)=>`<div class="rg-look${l.id===defId?' def':''}">
+          <div class="rg-thumb tall" style="${srcOf(l.img)?`background-image:url('${srcOf(l.img)}');background-position:center top`:''}"><span>${srcOf(l.img)?'':'Nessuna immagine'}</span></div>
+          <input type="text" id="eLook${i}" list="dlLooks" value="${esc(l.label||'')}" placeholder="Nome dell'aspetto" aria-label="Nome dell'aspetto">
+          <label class="rg-chk"><input type="radio" name="eLookDef" value="${esc(l.id)}"${l.id===defId?' checked':''}> Predefinito</label>
+          <div class="rg-acts"><button class="btn sm" data-rg="elook" data-i="${i}">${srcOf(l.img)?'Cambia':'Carica'}</button><button class="btn sm ghost" data-rg="rmlook" data-i="${i}">Elimina</button></div>
+        </div>`).join('')}</div>
+      <div class="rg-acts" style="grid-column:1/-1"><button class="btn sm" data-rg="addlook">+ Aspetto</button><button class="btn sm ghost" data-rg="addlook" data-preset="scuola">+ Set scuola (uniforme, costume, casual)</button><button class="btn sm ghost" data-rg="addlook" data-preset="base">+ Forma base</button></div>
+      <div class="rg-sec">Statistiche Marvel</div>
       <label>Rank<input id="eRank" type="number" min="1" max="6" value="${+o.rank||1}"></label>
       <div class="rg-abs">${ABK.map(k=>`<label>${k}<input id="eAb${k}" type="number" min="-3" max="9" value="${+((o.ab||{})[k])||0}"></label>`).join('')}</div>
       <label>Salute massima<input id="eHp" type="number" min="0" value="${+o.hpMax||0}"></label>
@@ -2509,8 +2581,6 @@ function editorHtml(){
       <label>Riduzione del danno<input id="eDr" type="number" min="0" value="${+o.dr||0}"></label>
       <label>Bonus al moltiplicatore in Mischia<input id="eMbM" type="number" min="0" value="${+((o.mb||{}).M)||0}"></label>
       <label class="w2">Note per il master (attacchi, poteri, come giocarlo)<textarea id="eDesc" rows="3">${esc(o.desc||'')}</textarea></label>
-      <label class="w2">Testo da mostrare ai giocatori<textarea id="ePub" rows="2">${esc(o.pub||'')}</textarea></label>
-      <div class="rg-img"><div class="rg-thumb tall" style="${srcOf(o.img)?`background-image:url('${srcOf(o.img)}')`:''}"><span>${srcOf(o.img)?'':'Nessuna immagine'}</span></div><button class="btn sm" data-rg="eimg">Carica immagine</button></div>
     </div>
     <div class="rg-acts"><button class="btn primary" data-rg="saveedit">Salva PNG</button>${o._new?'':`<button class="btn ghost" data-rg="deledit">Elimina</button>`}</div></section>`;
 }
@@ -2521,7 +2591,7 @@ function fightHtml(){
     return `<section class="rg-box"><div class="rg-h"><h3>Fight</h3></div>
       <div class="rg-sub">Chi combatte</div>
       <div class="rg-chips">${store.chars.map(c=>`<label class="rg-chk"><input type="checkbox" data-fpg="${esc(c.id)}" checked> ${esc(c.name||c.hero||'PG')}</label>`).join('')}</div>
-      <div class="rg-row">${foes.length?`<select id="fFoe" aria-label="PNG da aggiungere">${foes.map(p=>opt(p.id,p.name,'')).join('')}</select><label>Quanti <input id="fQty" type="number" min="1" max="12" value="1"></label><button class="btn sm" data-rg="addfoe">Aggiungi</button>`:'<span class="hint" style="margin:0">Crea prima un nemico con Salute nella sezione Personaggi.</span>'}</div>
+      <div class="rg-row">${foes.length?`<select id="fFoe" aria-label="PNG da aggiungere">${[...new Set(foes.map(folderOf))].sort().map(f=>`<optgroup label="${esc(f)}">${foes.filter(p=>folderOf(p)===f).map(p=>opt(p.id,p.name,'')).join('')}</optgroup>`).join('')}</select><label>Quanti <input id="fQty" type="number" min="1" max="12" value="1"></label><button class="btn sm" data-rg="addfoe">Aggiungi</button>`:'<span class="hint" style="margin:0">Crea prima un nemico con Salute nella sezione Personaggi.</span>'}</div>
       <div class="rg-chips">${R.draftEn.map((e,i)=>`<span class="tag">${esc(e.name)} <button class="x sm" data-rg="rmdraft" data-i="${i}" aria-label="Togli ${esc(e.name)}">×</button></span>`).join('')}</div>
       <div class="rg-acts"><button class="btn primary" data-rg="startfight">Avvia il fight</button></div></section>`;
   }
@@ -2576,7 +2646,10 @@ function readEditor(){
   if(edit.col==='episodi'){ o.num=+v('eNum')||0; o.title=v('eTitle'); o.recap=v('eRecap'); o.next=v('eNext'); return; }
   if(edit.col==='indizi'){ o.title=v('eTitle'); o.text=v('eText'); o.style=v('eStyle'); return; }
   if(edit.col==='scene'){ o.title=v('eTitle'); o.sub=v('eSub'); o.track=v('eTrack'); o.fightTrack=v('eFight'); o.order=+v('eOrder')||0; }
-  else { o.name=v('eName')||'Senza nome'; o.kind=v('eKind'); o.quirk=v('eQuirk'); o.color=v('eColor'); o.rank=Math.max(1,+v('eRank')||1); o.ab={}; ABK.forEach(k=>o.ab[k]=+v('eAb'+k)||0); o.hpMax=+v('eHp')||0; o.fcMax=+v('eFc')||0; o.dr=+v('eDr')||0; o.mb={M:+v('eMbM')||0}; o.desc=v('eDesc'); o.pub=v('ePub'); }
+  else { o.hero=v('eHero'); o.folder=v('eFolder').trim(); o.jpName=v('eJp'); o.jpReading=v('eJpR'); o.birthday=v('eBirth'); o.height=v('eHeight'); o.likes=v('eLikes');
+    (o.looks||[]).forEach((l,i)=>{ const el=document.getElementById('eLook'+i); if(el) l.label=el.value; });
+    const dr=document.querySelector('input[name="eLookDef"]:checked'); if(dr) o.look=dr.value;
+    o.name=v('eName')||'Senza nome'; o.kind=v('eKind'); o.quirk=v('eQuirk'); o.color=v('eColor'); o.rank=Math.max(1,+v('eRank')||1); o.ab={}; ABK.forEach(k=>o.ab[k]=+v('eAb'+k)||0); o.hpMax=+v('eHp')||0; o.fcMax=+v('eFc')||0; o.dr=+v('eDr')||0; o.mb={M:+v('eMbM')||0}; o.desc=v('eDesc'); o.pub=v('ePub'); }
 }
 document.addEventListener('input',e=>{
   const t=e.target; if(!t.closest('#viewRegia')) return;
@@ -2634,15 +2707,30 @@ document.addEventListener('click',async e=>{
   else if(a==='cdel'){ live.counters=live.counters.filter(x=>x.id!==id); saveLive(); }
   else if(a==='showscene'){ live.sceneId=id; if(live.mode!=='fight') live.mode='scena'; autoMusic(live.mode==='fight'?'fight':'scena'); saveLive(); }
   else if(a==='showpg'){ live.show={t:'pg',id}; live.mode='personaggio'; saveLive(); }
-  else if(a==='showpng'){ live.show={t:'png',id}; live.mode='personaggio'; saveLive(); }
+  else if(a==='showpng'){ live.show={t:'png',id,look:b.dataset.look||''}; live.mode='personaggio'; saveLive(); }
   else if(a==='newscene'){ edit={col:'scene',obj:{id:rid(),_new:true,order:R.scenes.length+1}}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
   else if(a==='editscene'){ edit={col:'scene',obj:clone(R.scenes.find(s=>s.id===id))}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
-  else if(a==='newpng'){ edit={col:'png',obj:{id:rid(),_new:true,kind:'nemico',rank:1,ab:{M:0,A:0,R:0,V:0,E:0,L:0},hpMax:30,fcMax:10,color:'#5b6478'}}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
-  else if(a==='editpng'){ edit={col:'png',obj:clone(pngOf(id))}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
+  else if(a==='newpng'){ edit={col:'png',obj:{id:rid(),_new:true,looks:[],folder:'',kind:'nemico',rank:1,ab:{M:0,A:0,R:0,V:0,E:0,L:0},hpMax:30,fcMax:10,color:'#5b6478'}}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
+  else if(a==='editpng'){ edit={col:'png',obj:clone(pngOf(id))}; edit.obj.looks=clone(looksOf(edit.obj)); renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
   else if(a==='closeedit'){ edit=null; renderRegia(); }
+  else if(a==='addlook'){ readEditor(); const o=edit.obj; o.looks=o.looks||[]; const pr=b.dataset.preset;
+    const add=lb=>o.looks.push({id:rid()+o.looks.length,label:lb,img:''});
+    if(pr==='scuola') ['Uniforme scolastica','Costume da eroe','Abiti casual'].forEach(add); else if(pr==='base') add('Forma base'); else add('');
+    renderRegia(); }
+  else if(a==='rmlook'){ readEditor(); const o=edit.obj; const l=(o.looks||[])[+b.dataset.i]; if(!l) return;
+    if(l.img&&b.dataset.sure!=='1'){ b.dataset.sure='1'; b.textContent='Sicuro?'; b.classList.add('danger'); return; }
+    o.looks.splice(+b.dataset.i,1); if(o.look===l.id) o.look=''; renderRegia(); }
+  else if(a==='elook'||a==='eface'){ readEditor(); const f=await pickFile('image/*'); if(!f) return; b.disabled=true; b.textContent='Carico…';
+    try{ const v=await uploadImg(f,2000,true); if(a==='eface'){ edit.obj.face=v; delete edit.obj.faceCrop; } else { const l=edit.obj.looks[+b.dataset.i]; if(l) l.img=v; } toast('Immagine caricata'); }
+    catch(err){ toast('Immagine non caricata: '+((err&&err.code)||'formato non valido')); } renderRegia(); }
+  else if(a==='rmface'){ readEditor(); delete edit.obj.face; delete edit.obj.faceCrop; renderRegia(); }
+  else if(a==='cropface'){ readEditor(); const o=edit.obj; if(!srcOf(o.face)) return;
+    window.cropOpen({kind:'face',src:srcOf(o.face),val:cropOf(o,'face'),title:'Primo piano di '+(o.name||'PNG'),save:v=>{ edit.obj.faceCrop=v; renderRegia(); }}); }
+  else if(a==='cropthumb'){ readEditor(); const o=edit.obj, th=pngThumb(o); if(!th) return;
+    window.cropOpen({kind:'thumb',src:th.src,val:th.crop,title:'Figurina di '+(o.name||'PNG'),hint:'È la miniatura usata nella Regia e nell\'ordine di iniziativa sullo schermo.',save:v=>{ edit.obj.thumb=v; renderRegia(); }}); }
   else if(a==='eimg'){ readEditor(); const f=await pickFile('image/*'); if(!f) return; b.disabled=true; b.textContent='Carico…';
     try{ edit.obj.img=await uploadImg(f,edit.col==='png'?1600:2400,edit.col==='png'); toast('Immagine caricata'); }catch(err){ toast('Immagine non caricata: '+((err&&err.code)||'formato non valido')); } renderRegia(); }
-  else if(a==='saveedit'){ readEditor(); const o=clone(edit.obj); delete o._new; await saveDoc(edit.col,o); edit=null; renderRegia(); }
+  else if(a==='saveedit'){ readEditor(); const o=clone(edit.obj); delete o._new; if(edit.col==='png'){ o.looks=(o.looks||[]).filter(l=>l.img||String(l.label||'').trim()); o.img=(lookOf(o)||{}).img||''; } await saveDoc(edit.col,o); edit=null; renderRegia(); }
   else if(a==='deledit'){ if(b.dataset.sure!=='1'){ b.dataset.sure='1'; b.textContent='Sì, elimina'; b.classList.add('danger'); return; } await delDoc(edit.col,edit.obj.id); edit=null; renderRegia(); }
   else if(a==='addfoe'){ const p=pngOf(document.getElementById('fFoe').value); const n=Math.max(1,Math.min(12,+document.getElementById('fQty').value||1)); if(!p) return;
     const same=R.draftEn.filter(x=>x.png===p.id).length;
@@ -2688,7 +2776,7 @@ function renderTV(){
   } else if(live.mode==='scena'){
     h=`<div class="tv-scene" style="${bg?`background-image:url('${bg}')`:''}"><div class="tv-cap"><h2>${esc(sc.title||'')}</h2>${sc.sub?`<p>${esc(sc.sub)}</p>`:''}</div></div>`;
   } else if(live.mode==='personaggio'&&live.show){
-    h=live.show.t==='pg'?tvPg(store.chars.find(c=>c.id===live.show.id)):tvPng(pngOf(live.show.id));
+    h=live.show.t==='pg'?tvPg(store.chars.find(c=>c.id===live.show.id)):tvPng(pngOf(live.show.id),live.show.look);
   } else if(live.mode==='fight'&&live.fight){
     const f=live.fight; const parts=f.order.map(o=>part(o.key)).filter(Boolean); const cur=parts[f.turn];
     h=`<div class="tv-fight"><div class="tv-fscene" style="${bg?`background-image:url('${bg}')`:''}">
@@ -2734,18 +2822,21 @@ function tvPg(c){
   if(!c) return '';
   const m=IMG[c.id]||{}; const full=m.hero||m.uniform||m.casual||''; const face=m.face||'';
   return `<div class="tv-prof" style="--pc:${esc(c.color||'#2a9d8f')}"><div class="tv-pstage">${full?`<img src="${esc(full)}" alt="">`:''}<div class="tv-wm">${esc((c.name||'').toUpperCase())}</div></div>
-    <div class="tv-pinfo">${face?`<div class="tv-face"><img src="${esc(face)}" alt=""></div>`:''}
+    <div class="tv-pinfo">${face?`<div class="tv-face"><img src="${esc(face)}" alt="" style="${cropCss(cropOf(c,'face'))}"></div>`:''}
       ${c.jpReading?`<p class="furi">${esc(c.jpReading)}</p>`:''}${c.jpName?`<p class="kanji">${esc(c.jpName)}</p>`:''}
       <p class="romaji">${esc((c.name||'').toUpperCase())}${c.hero?' "'+esc(c.hero.toUpperCase())+'"':''}</p>
       <dl class="tv-rows">${[['Quirk',c.quirk],['Compleanno',c.birthday],['Altezza',c.height],['Gli piace',c.likes],['Giocatore',c.player]].filter(r=>r[1]).map(r=>`<div><dt>${r[0]}</dt><dd>${esc(r[1])}</dd></div>`).join('')}</dl>
       ${c.blurb?`<p class="tv-blurb">${esc(c.blurb)}</p>`:''}</div></div>`;
 }
-function tvPng(p){
+function tvPng(p,lid){
   if(!p) return '';
-  const img=srcOf(p.img);
-  return `<div class="tv-prof" style="--pc:${esc(p.color||'#5b6478')}"><div class="tv-pstage">${img?`<img src="${esc(img)}" alt="">`:''}<div class="tv-wm">${esc((p.name||'').toUpperCase())}</div></div>
-    <div class="tv-pinfo"><p class="romaji big">${esc((p.name||'').toUpperCase())}</p>
-      ${p.quirk?`<dl class="tv-rows"><div><dt>Quirk</dt><dd>${esc(p.quirk)}</dd></div></dl>`:''}
+  const lk=lookOf(p,lid), full=lk?srcOf(lk.img):'', face=srcOf(p.face), nm=(p.name||'').toUpperCase();
+  const rows=[['Quirk',p.quirk],['Compleanno',p.birthday],['Altezza',p.height],['Gli piace',p.likes]].filter(r=>r[1]);
+  return `<div class="tv-prof" style="--pc:${esc(p.color||'#5b6478')}"><div class="tv-pstage">${full?`<img src="${esc(full)}" alt="">`:''}<div class="tv-wm">${esc(nm)}</div></div>
+    <div class="tv-pinfo">${face?`<div class="tv-face"><img src="${esc(face)}" alt="" style="${cropCss(cropOf(p,'face'))}"></div>`:''}
+      ${p.jpReading?`<p class="furi">${esc(p.jpReading)}</p>`:''}${p.jpName?`<p class="kanji">${esc(p.jpName)}</p>`:''}
+      <p class="romaji${(p.jpName||face)?'':' big'}">${esc(nm)}${p.hero?' "'+esc(p.hero.toUpperCase())+'"':''}</p>
+      ${rows.length?`<dl class="tv-rows">${rows.map(r=>`<div><dt>${r[0]}</dt><dd>${esc(r[1])}</dd></div>`).join('')}</dl>`:''}
       ${p.pub?`<p class="tv-blurb">${esc(p.pub)}</p>`:''}</div></div>`;
 }
 
