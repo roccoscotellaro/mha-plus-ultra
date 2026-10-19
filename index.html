@@ -810,17 +810,99 @@ body.tvmode{overflow:hidden;background:#07090f}
 
 /* entrata del personaggio: prima la figura intera al centro che si avvicina lentamente, poi scritte e primo piano */
 @media (prefers-reduced-motion:no-preference){
-  .tvo .tvo-figs{transform-origin:50% 75%;animation:tvoZoom 3.2s cubic-bezier(.33,0,.2,1) both}
-  .tvo-face{animation:tvoFaceIn .55s cubic-bezier(.2,.8,.2,1) 2.3s both}
+  .tvo .tvo-figs{transform-origin:50% 100%;animation:tvoZoom 2.8s cubic-bezier(.3,.1,.3,1) both}
+  .tvo-face{animation:tvoFaceIn .6s cubic-bezier(.2,.8,.2,1) 1.4s both}
   .tvo-text>*{animation:tvoUp .5s cubic-bezier(.2,.8,.2,1) both}
-  .tvo-text>*:nth-child(1){animation-delay:2.45s}.tvo-text>*:nth-child(2){animation-delay:2.6s}.tvo-text>*:nth-child(3){animation-delay:2.78s}
-  .tvo-wm{animation:tvoFade .8s ease-out 2.6s both}
-  @keyframes tvoZoom{0%{transform:translateX(-24vw) scale(1.32);opacity:0}10%{opacity:1}62%{transform:translateX(-24vw) scale(1.12);opacity:1}100%{transform:none;opacity:1}}
+  .tvo-text>*:nth-child(1){animation-delay:1.6s}.tvo-text>*:nth-child(2){animation-delay:1.8s}.tvo-text>*:nth-child(3){animation-delay:2s}
+  .tvo-wm{animation:tvoFade .8s ease-out 1.9s both}
+  @keyframes tvoZoom{0%{transform:scale(.86);opacity:0}14%{opacity:1}100%{transform:none;opacity:1}}
   @keyframes tvoFaceIn{from{transform:translateX(-60%);opacity:0}to{transform:none;opacity:1}}
   @keyframes tvoUp{from{transform:translateX(-4vw);opacity:0}to{transform:none;opacity:1}}
   @keyframes tvoFade{from{opacity:0}to{opacity:1}}
 }
 .tv-mainw{position:absolute;inset:0}
+/* ===== Personaggi in sovrimpressione sulla scena ===== */
+.tv-ov{position:absolute;inset:0;pointer-events:none;z-index:3}
+.tv-ovf{--pc:#2a9d8f;position:absolute;bottom:0;height:80vh;transform:translateX(-50%);transition:left .6s cubic-bezier(.2,.8,.2,1),width .6s;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.tv-ovf img{max-width:100%;max-height:calc(100% - 5vh);object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 0 .25vw #fff) drop-shadow(.5vw .5vw 0 var(--pc))}
+.tv-ovf .tv-ovn{margin:0 0 2.2vh;font-family:var(--f-display);font-size:2.6vw;letter-spacing:.04em;line-height:1;color:#fff;background:#07090f;border-left:.6vw solid var(--pc);padding:.5vh 1.2vw;transform:skewX(-8deg);white-space:nowrap}
+.tv-ovf.inL{animation:ovInL .7s cubic-bezier(.2,.8,.2,1) both}.tv-ovf.inR{animation:ovInR .7s cubic-bezier(.2,.8,.2,1) both}
+.tv-ovf.out{animation:ovOut .45s ease-in both}
+@keyframes ovInL{from{transform:translateX(-50%) translateX(-60vw)}to{transform:translateX(-50%)}}
+@keyframes ovInR{from{transform:translateX(-50%) translateX(60vw)}to{transform:translateX(-50%)}}
+@keyframes ovOut{to{transform:translateX(-50%) translateY(20vh);opacity:0}}
+.tv-scene.has-ov .tv-cap{bottom:auto;top:5vh}
+.tv-scene.has-ov::after{content:"";position:absolute;inset:auto 0 0 0;height:45vh;background:linear-gradient(transparent,rgba(7,9,15,.55))}
+/* mini ritratti */
+.mini{display:inline-block;overflow:hidden;background:#1b2440;flex:none}
+.mini img{width:100%;height:100%;object-fit:cover;display:block}
+.mini i{display:grid;place-items:center;width:100%;height:100%;font-style:normal;font-family:var(--f-display);color:#fff;background:var(--pc,#334)}
+/* ===== Risultati dell'esame ===== */
+.tv-exam{position:absolute;inset:0;display:flex;flex-direction:column;padding:4vh 4vw 3vh;background:#0b1430 radial-gradient(circle at 80% 0,#23357a 0,transparent 55%);color:#f4f5fb;overflow:hidden}
+.ex-head{display:flex;align-items:flex-end;gap:2vw;border-bottom:.4vh solid var(--tvy);padding-bottom:1.2vh;margin-bottom:2vh;animation:exHead .6s cubic-bezier(.2,.8,.2,1) both}
+.ex-head .ua{font-family:var(--f-display);font-size:5vw;line-height:.8;color:#07090f;background:var(--tvy);padding:.6vh 1vw;transform:skewX(-8deg)}
+.ex-head h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:4.4vw;line-height:.9;letter-spacing:.03em}
+.ex-head p{margin:.4vh 0 0;font-size:1.5vw;letter-spacing:.2em;text-transform:uppercase;color:var(--tvmut)}
+.ex-list{flex:1;list-style:none;margin:0;padding:0;display:grid;grid-auto-flow:column;grid-template-rows:repeat(var(--rows),minmax(0,1fr));grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:.8vh 2.4vw;min-height:0}
+.ex-list li{--pc:#3a4a80;display:grid;grid-template-columns:4.2vw calc(var(--rh) * .9) minmax(0,1fr) auto auto;align-items:center;gap:1vw;background:rgba(19,32,74,.9);border-left:.5vw solid #3a4a80;padding:0 1.2vw 0 .6vw;font-size:min(2vw,calc(var(--rh) * .42));animation:exRow .5s cubic-bezier(.2,.8,.2,1) var(--d) both;min-height:0}
+.ex-list li.pg{background:linear-gradient(90deg,color-mix(in srgb,var(--pc) 55%,#13204a),#13204a 70%);border-left-color:var(--pc);font-weight:700}
+.ex-list li.no{opacity:.55}
+.ex-list li.top{outline:.3vh solid var(--tvy)}
+.ex-list .pos{font-family:var(--f-display);font-size:1.5em;color:var(--tvy);text-align:center}
+.ex-list .mini{width:calc(var(--rh) * .9);height:calc(var(--rh) * .9);border:.2vh solid rgba(255,255,255,.4)}
+.ex-list .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex-list .cls{font-size:.7em;letter-spacing:.12em;text-transform:uppercase;background:#07090f;padding:.2em .6em;color:#cfd6ff}
+.ex-list li.pg .cls{background:var(--tvy);color:#07090f}
+.ex-list .pt{font-family:var(--f-display);font-weight:400;font-size:1.6em;color:#fff;min-width:3.2em;text-align:right}
+.ex-list .pt small{font-family:var(--f-body);font-size:.45em;margin-left:.2em;color:var(--tvmut)}
+@keyframes exHead{from{transform:translateY(-6vh);opacity:0}}
+@keyframes exRow{from{transform:translateX(-6vw);opacity:0}}
+/* ===== Classifica degli eroi ===== */
+.tv-chart{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:3vw;padding:4vh 4vw;background:#07090f;background-image:repeating-linear-gradient(115deg,rgba(255,225,0,.05) 0 2vw,transparent 2vw 4vw);color:#f4f5fb;overflow:hidden}
+.ch-head{grid-column:1/-1;display:flex;align-items:baseline;gap:2vw;animation:exHead .6s both}
+.ch-head h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:5vw;line-height:.9;color:var(--tvy);text-shadow:.4vw .4vw 0 var(--tvr)}
+.ch-head span{font-family:"Noto Sans JP",sans-serif;font-weight:900;font-size:1.8vw;color:var(--tvmut)}
+.ch-pod{display:grid;grid-template-rows:1.25fr 1fr 1fr;gap:1.6vh;min-height:0}
+.ch-top{--pc:#ffe100;position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:1.4vw;background:linear-gradient(100deg,color-mix(in srgb,var(--pc) 60%,#101830),#101830 75%);border:.3vh solid var(--pc);padding:1vh 1.4vw;min-height:0;overflow:hidden;animation:exRow .6s cubic-bezier(.2,.8,.2,1) var(--d) both}
+.ch-top .mini{height:100%;aspect-ratio:1;border:.3vh solid #fff}
+.ch-top .rk{position:absolute;right:1vw;top:-1vh;font-family:var(--f-display);font-size:11vh;line-height:1;color:rgba(255,255,255,.18)}
+.ch-top b{display:block;font-family:var(--f-display);font-weight:400;font-size:3.6vw;line-height:.95;letter-spacing:.02em}
+.ch-top small{display:block;font-size:1.5vw;color:#dfe4ff}
+.ch-top em{font-style:normal;font-weight:800;font-size:1.4vw}
+.ch-list{list-style:none;margin:0;padding:0;display:grid;grid-template-rows:repeat(var(--rows),minmax(0,1fr));grid-auto-flow:column;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:.6vh 1.6vw;min-height:0}
+.ch-list li{--pc:#3a4a80;display:grid;grid-template-columns:3.4vw calc(var(--rh) * .85) minmax(0,1fr) auto;align-items:center;gap:.8vw;background:#13204a;border-left:.4vw solid var(--pc);padding:0 .8vw 0 .4vw;font-size:min(1.7vw,calc(var(--rh) * .42));animation:exRow .45s cubic-bezier(.2,.8,.2,1) var(--d) both;min-height:0}
+.ch-list li.hl{background:color-mix(in srgb,var(--tvy) 30%,#13204a);outline:.25vh solid var(--tvy)}
+.ch-list .pos{font-family:var(--f-display);font-size:1.4em;color:var(--tvy);text-align:center}
+.ch-list .mini{width:calc(var(--rh) * .85);height:calc(var(--rh) * .85)}
+.ch-list .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.ch-list .nm small{font-weight:400;color:var(--tvmut);margin-left:.5em}
+.up{color:#4ade80}.dn{color:#ff6b74}.eq{color:#9aa3c7}
+.ch-list .trd,.ch-top em{font-weight:800}
+.ch-list li.nomini{grid-template-columns:3.4vw minmax(0,1fr) auto}
+.ch-top.nomini{grid-template-columns:minmax(0,1fr)}
+.ex-list .cls{white-space:nowrap}
+/* ===== Ammessi alla 1-A ===== */
+.tv-adm{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:5vh 3vw 0;background:radial-gradient(circle at 50% 30%,#1b2a6b 0,#07090f 70%);color:#fff;overflow:hidden}
+.adm-crest{width:9vw;aspect-ratio:.86;display:grid;place-items:center;background:linear-gradient(#e1262f,#9c111a);clip-path:polygon(50% 0,100% 12%,100% 58%,50% 100%,0 58%,0 12%);animation:admCrest 1s cubic-bezier(.2,1.4,.4,1) both}
+.adm-crest b{font-family:var(--f-display);font-weight:400;font-size:3.6vw;letter-spacing:.04em;color:#fff;margin-top:-1vw}
+.adm-k{margin:2vh 0 3vh;font-size:1.8vw;letter-spacing:.32em;text-transform:uppercase;color:var(--tvmut);animation:tvoFade .6s .7s both}
+.adm-cards{display:flex;flex-wrap:wrap;justify-content:center;gap:2vh 1.6vw;width:100%}
+.adm-card{--pc:#2a9d8f;position:relative;width:var(--cw);background:#101830;border:.3vh solid var(--pc);box-shadow:.5vw .5vw 0 var(--pc);animation:admCard .55s cubic-bezier(.2,.8,.2,1) var(--d) both}
+.adm-card .mini{display:block;width:100%;aspect-ratio:1}
+.adm-card p{margin:0;padding:.8vh .6vw;text-align:center;font-family:var(--f-display);font-size:calc(var(--cw) * .13);line-height:1;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-card small{display:block;font-family:var(--f-body);font-size:.5em;color:var(--tvmut);letter-spacing:.1em;margin-top:.3vh}
+.adm-stamp{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) rotate(-14deg);font-family:var(--f-display);font-size:calc(var(--cw) * .2);letter-spacing:.06em;color:#ff2d3a;border:.45vh solid #ff2d3a;padding:.2vh .8vw;background:rgba(255,255,255,.88);white-space:nowrap;animation:admStamp .35s cubic-bezier(.3,1.6,.5,1) calc(var(--d) + .45s) both}
+.adm-final{position:absolute;left:0;right:0;bottom:6vh;display:flex;flex-direction:column;align-items:center;animation:admFinal .7s cubic-bezier(.2,1.3,.4,1) var(--df) both}
+.adm-final b{font-family:var(--f-display);font-weight:400;font-size:9vw;line-height:.85;color:var(--tvy);text-shadow:.6vw .6vw 0 var(--tvr);transform:skewX(-6deg)}
+.adm-final span{margin-top:1vh;font-family:"Anton",sans-serif;font-size:2vw;letter-spacing:.25em;background:#07090f;padding:.4vh 1.6vw}
+.adm-final::before{content:"";position:absolute;left:50%;top:50%;width:140vw;height:140vw;transform:translate(-50%,-50%);background:repeating-conic-gradient(rgba(255,225,0,.12) 0 6deg,transparent 6deg 12deg);z-index:-1;animation:admSpin 20s linear infinite}
+@keyframes admCrest{from{transform:scale(0) rotate(-30deg)}}
+@keyframes admCard{from{transform:translateY(8vh) scale(.8);opacity:0}}
+@keyframes admStamp{from{transform:translate(-50%,-50%) rotate(-14deg) scale(3);opacity:0}}
+@keyframes admFinal{from{transform:scale(.3);opacity:0}}
+@keyframes admSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.tv-exam *,.tv-chart *,.tv-adm *,.tv-ovf{animation:none!important}}
+
 /* ===== Stacco di scena (eyecatch) ===== */
 .tv-eye{position:fixed;inset:0;z-index:22;pointer-events:none;overflow:hidden;display:grid;place-items:center}
 .tv-eye .ey-bg{position:absolute;inset:-10%;background:#f7f7f7;background-image:conic-gradient(#e3e3e3 25%,transparent 0 50%,#e3e3e3 0 75%,transparent 0);background-size:1.5vw 1.5vw;transform:translateX(-120%) skewX(-12deg)}
@@ -1077,7 +1159,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 20:15</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 21:30</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2615,7 +2697,7 @@ function renderRegia(){
   const modes=[['nero','Titolo'],['scena','Scena'],['personaggio','Personaggio'],['fight','Fight'],['tg','TG']];
   const ep=R.eps.find(x=>x.id===live.epId), cl=R.clues.find(x=>x.id===live.clueId);
   const showP=live.show?(live.show.t==='pg'?(store.chars.find(c=>c.id===live.show.id)||{}).name:(pngOf(live.show.id)||{}).name):'';
-  let h=`<div class="rg-onair"><div><span class="lab">In onda sullo schermo</span><b>${esc({nero:'Schermata del titolo',scena:'Scena: '+((sc&&sc.title)||'nessuna'),personaggio:'Personaggio: '+(showP||'nessuno'),fight:'Fight'+(live.fight?' · '+roundLbl(live.fight).toLowerCase():''),episodio:'Titolo episodio '+((ep&&ep.num)||''),recap:'Riassunto episodio '+((ep&&ep.num)||''),anteprima:'Anteprima del prossimo episodio',indizio:'Indizio: '+((cl&&cl.title)||''),tg:'Telegiornale'}[live.mode]||'')}</b></div>
+  let h=`<div class="rg-onair"><div><span class="lab">In onda sullo schermo</span><b>${esc({nero:'Schermata del titolo',scena:'Scena: '+((sc&&sc.title)||'nessuna'),personaggio:'Personaggio: '+(showP||'nessuno'),fight:'Fight'+(live.fight?' · '+roundLbl(live.fight).toLowerCase():''),episodio:'Titolo episodio '+((ep&&ep.num)||''),recap:'Riassunto episodio '+((ep&&ep.num)||''),anteprima:'Anteprima del prossimo episodio',indizio:'Indizio: '+((cl&&cl.title)||''),tg:'Telegiornale',esame:'Risultati dell\'esame',classifica:'Classifica degli eroi',ammessi:'Ammessi alla 1-A'}[live.mode]||'')}</b></div>
     <div class="rg-modes">${modes.map(([m,l])=>`<button class="btn sm${live.mode===m?' primary':''}" data-rg="mode" data-v="${m}"${m==='fight'&&!live.fight?' disabled':''}>${l}</button>`).join('')}</div></div>`;
   // musica
   const tr=R.tracks;
@@ -2663,10 +2745,25 @@ function renderRegia(){
       <label>Dai social, una riga per post: @nome: testo<textarea id="tgSoc" rows="6">${esc(tg.social||'')}</textarea></label>
       <label class="w2">Notizie che scorrono, una per riga<textarea id="tgTick" rows="3">${esc(tg.ticker||'')}</textarea></label>
     </div></section>`;
+  h+=`<section class="rg-box"><div class="rg-h"><h3>Classifiche e ammissione</h3><div class="rg-acts"><button class="btn sm primary" data-rg="showchart">Classifica eroi</button><button class="btn sm primary" data-rg="showexam">Risultati esame</button><button class="btn sm primary" data-rg="showadmit">Ammessi alla 1-A</button><button class="btn sm" data-rg="savetg">Salva</button></div></div>
+    <div class="rg-form">
+      <label>Hero Billboard Chart, una riga per eroe: posizione | nome da eroe | variazione | nome vero<textarea id="tgChart" rows="10" placeholder="1 | Dynamight | = | Katsuki Bakugo">${esc(tg.chart||'')}</textarea></label>
+      <label>Risultati dell'esame, una riga per studente: nome | punti | classe (si ordinano da soli)<textarea id="tgExam" rows="10" placeholder="Keiko Tsukumo | 15 | 1-A">${esc(tg.exam||'')}</textarea></label>
+      <label>Eroe da evidenziare in classifica<input id="tgHl" value="${esc(tg.chartHl||'Shield')}"></label>
+      <label class="rg-chk" style="align-self:end"><input type="checkbox" id="rgAdmAll"${live.admitAll?' checked':''}> Nell'animazione degli ammessi mostra anche i compagni PNG della cartella "Classe 1-A"</label>
+      <p class="hint w2" style="margin:0">Foto e colori arrivano da soli se il nome corrisponde a un PG o a un PNG. Le righe dei PG si colorano col loro colore. Scrivi "non ammesso" come classe per una riga in grigio.</p>
+    </div></section>`;
   // scene
   h+=`<section class="rg-box"><div class="rg-h"><h3>Scene</h3><button class="btn sm primary" data-rg="newscene">+ Nuova scena</button></div>
     <div class="rg-grid">${R.scenes.map(s=>`<article class="rg-card${s.id===live.sceneId?' on':''}"><div class="rg-thumb" style="${srcOf(s.img)?`background-image:url('${srcOf(s.img)}')`:''}"><span>${esc(s.title||'Senza titolo')}</span></div>
       <div class="rg-cb"><small>${esc(s.sub||'')}</small><div class="rg-acts"><button class="btn sm primary" data-rg="showscene" data-id="${esc(s.id)}">Mostra</button><button class="btn sm" data-rg="editscene" data-id="${esc(s.id)}">Modifica</button></div></div></article>`).join('')||'<p class="empty">Nessuna scena. Creane una con immagine e brano.</p>'}</div></section>`;
+  // sovrimpressione sulla scena
+  const ov=live.ov||[];
+  h+=`<section class="rg-box"><div class="rg-h"><h3>Personaggi sopra la scena</h3><span class="hint" style="margin:0">Compaiono a figura intera sopra la scena in onda, fino a 4. Si vedono solo in modalità Scena.</span></div>
+    <div class="rg-chips">${store.chars.map(c=>{ const on=ov.some(o=>o.t==='pg'&&o.id===c.id); return `<button class="rg-pc${on?' on':''}" style="--pc:${esc(c.color||'#2a9d8f')}" data-rg="ovpg" data-id="${esc(c.id)}" aria-pressed="${on}">${portraitOf(c)?`<img src="${esc(portraitOf(c))}" alt="">`:''}<span>${esc(c.name||'PG')}</span></button>`; }).join('')}</div>
+    <div class="rg-row" style="margin-top:8px"><select id="ovPng" aria-label="PNG da aggiungere">${foldersAll().map(f=>`<optgroup label="${esc(f)}">${R.pngs.filter(p=>folderOf(p)===f&&looksOf(p).some(l=>l.img)).map(p=>opt(p.id,p.hero?p.hero+' · '+p.name:p.name,'')).join('')}</optgroup>`).join('')}</select><button class="btn sm primary" data-rg="ovadd">Aggiungi in scena</button>${ov.length?'<button class="btn sm ghost" data-rg="ovclr">Togli tutti</button>':''}</div>
+    ${ov.length?`<div class="rg-list" style="margin-top:8px">${ov.map((o,i)=>{ const f=ovFull(o)||{name:'?'}; const L=o.t==='pg'?Object.keys(PG_LOOKS).filter(k=>(IMG[o.id]||{})[k]).map(k=>({id:k,label:PG_LOOKS[k]})):looksOf(pngOf(o.id)).filter(l=>l.img);
+      return `<div class="rg-li"><span class="rg-dot" style="background:${esc(f.color||'#5b6478')}"></span><b>${esc(f.name)}</b>${L.length>1?`<select data-ovlook="${i}" aria-label="Aspetto">${L.map(l=>opt(l.id,l.label||'Aspetto',o.look||'')).join('')}</select>`:''}<span class="rg-acts"><button class="btn sm ghost" data-rg="ovdel" data-id="${i}">Togli</button></span></div>`; }).join('')}</div>`:''}</section>`;
   // personaggi
   h+=`<section class="rg-box"><div class="rg-h"><h3>Personaggi</h3><button class="btn sm primary" data-rg="newpng">+ Nuovo PNG o nemico</button></div>
     <div class="rg-sub">Giocanti</div><div class="rg-chips">${store.chars.map(c=>`<button class="rg-pc${live.show&&live.show.t==='pg'&&live.show.id===c.id&&live.mode==='personaggio'?' on':''}" style="--pc:${esc(c.color||'#2a9d8f')}" data-rg="showpg" data-id="${esc(c.id)}">${portraitOf(c)?`<img src="${esc(portraitOf(c))}" alt="">`:''}<span>${esc(c.name||c.hero||'PG')}</span></button>`).join('')}</div>${pgLookBar()}
@@ -2861,6 +2958,8 @@ document.addEventListener('change',e=>{
   else if(t.id==='rgLoop'){ live.music.loop=t.checked; saveLive(); }
   else if(t.id==='rgSting'){ live.music.sting=t.checked; saveLive(); }
   else if(t.id==='rgStingT'){ live.music.stingId=t.value; saveLive(); }
+  else if(t.id==='rgAdmAll'){ live.admitAll=t.checked; saveLive(); }
+  else if(t.dataset.ovlook!=null){ const o=(live.ov||[])[+t.dataset.ovlook]; if(o){ o.look=t.value; saveLive(); } }
   else if(t.id==='rgSkip'){ live.fight.skipDown=t.checked; saveLive(); }
   else if(t.dataset.cshow){ const c=(live.counters||[]).find(x=>x.id===t.dataset.cshow); if(c){ c.show=t.checked; saveLive(); } }
   else if(t.id==='aFrom'){ atk.from=t.value; atk.pw=''; if(atk.to===atk.from) atk.to=''; atk.roll=''; atk.md=''; atk.dmg=''; renderRegia(); }
@@ -2885,9 +2984,10 @@ document.addEventListener('click',async e=>{
   else if(a==='cluemore'){ live.clueStep=Math.min(4,(+live.clueStep||0)+1); saveLive(); }
   else if(a==='clueall'){ live.clueStep=4; saveLive(); }
   else if(a==='cluehide'){ live.clueStep=0; saveLive(); }
-  else if(a==='savetg'||a==='showtg'){ const v=k=>document.getElementById(k).value; R.tg={head:v('tgHead'),sub:v('tgSub'),rank:v('tgRank'),social:v('tgSoc'),ticker:v('tgTick'),updatedAt:Date.now()}; lsR(); if(bc) bc.postMessage({tg:R.tg});
+  else if(['savetg','showtg','showchart','showexam','showadmit'].includes(a)){ const v=k=>{ const el=document.getElementById(k); return el?el.value:''; }; R.tg=Object.assign({},R.tg||{},{head:v('tgHead'),sub:v('tgSub'),rank:v('tgRank'),social:v('tgSoc'),ticker:v('tgTick'),chart:v('tgChart'),exam:v('tgExam'),chartHl:v('tgHl'),updatedAt:Date.now()}); lsR(); if(bc) bc.postMessage({tg:R.tg});
     if(R.db){ try{ await R.db.doc('stato/tg').set(clone(R.tg)); }catch(e){ toast('TG non salvato'); } }
-    if(a==='showtg'){ live.mode='tg'; saveLive(); } else { toast('TG salvato'); refresh(); } }
+    if(a==='savetg'){ toast('Salvato'); refresh(); }
+    else { const m={showtg:'tg',showchart:'classifica',showexam:'esame',showadmit:'ammessi'}[a]; if(a==='showadmit'&&live.music.sting!==false) live.trans={at:Date.now(),kind:'char',title:''}; live.mode=m; saveLive(); } }
   else if(a==='burst'){ const c=store.chars.find(x=>x.id===R.bPg); const txt=(document.getElementById('bText').value.trim()||document.getElementById('bMove').value||'').trim(); if(!txt){ toast('Scrivi il nome del colpo'); return; }
     live.burst={text:txt.toUpperCase(),sub:c?(c.name||c.hero):'',img:c?portraitOf(c):'',color:(c&&c.color)||'#e1262f',sfx:document.getElementById('bSfx').value||'',at:Date.now()}; logF((c?(c.name||'').split(' ')[0]+': ':'')+txt.toUpperCase()+'!'); saveLive(); toast('Colpo lanciato'); }
   else if(a==='sfx'){ live.sfx={id,at:Date.now()}; saveLive(); }
@@ -2902,6 +3002,11 @@ document.addEventListener('click',async e=>{
   else if(a==='cdel'){ live.counters=live.counters.filter(x=>x.id!==id); saveLive(); }
   else if(a==='teststing'){ const sc0=R.scenes.find(x=>x.id===live.sceneId); live.trans={at:Date.now(),title:(sc0&&sc0.title)||'Prova stacco'}; saveLive(); toast('Stacco inviato allo schermo'); }
   else if(a==='showscene'){ if(live.music.sting!==false&&(id!==live.sceneId||live.mode!=='scena')){ const sc0=R.scenes.find(x=>x.id===id); live.trans={at:Date.now(),title:(sc0&&sc0.title)||''}; } live.sceneId=id; if(live.mode!=='fight') live.mode='scena'; autoMusic(live.mode==='fight'?'fight':'scena'); saveLive(); }
+  else if(a==='ovpg'||a==='ovadd'){ live.ov=live.ov||[]; const pid=a==='ovpg'?id:(document.getElementById('ovPng')||{}).value; const t=a==='ovpg'?'pg':'png'; if(!pid) return;
+    const k=live.ov.findIndex(o=>o.t===t&&o.id===pid); if(k>=0){ if(a==='ovpg') live.ov.splice(k,1); } else { if(live.ov.length>=4) live.ov.shift(); const p0=t==='png'?pngOf(pid):null; live.ov.push({t,id:pid,look:p0?((lookOf(p0)||{}).id||''):''}); }
+    if(live.mode!=='scena'&&live.sceneId&&live.ov.length) live.mode='scena'; saveLive(); }
+  else if(a==='ovdel'){ (live.ov||[]).splice(+id,1); saveLive(); }
+  else if(a==='ovclr'){ live.ov=[]; saveLive(); }
   else if(a==='showpg'){ stingFor('pg',id,b.dataset.look||''); live.show={t:'pg',id,look:b.dataset.look||''}; live.mode='personaggio'; saveLive(); }
   else if(a==='showpng'){ stingFor('png',id,b.dataset.look||''); live.show={t:'png',id,look:b.dataset.look||''}; live.mode='personaggio'; saveLive(); }
   else if(a==='newscene'){ edit={col:'scene',obj:{id:rid(),_new:true,order:R.scenes.length+1}}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
@@ -2970,7 +3075,7 @@ function renderTV(){
   if(live.mode==='nero'||(!sc&&live.mode==='scena')){
     h=`<div class="tv-title"><div class="tv-burst" aria-hidden="true"></div><p class="k">Marvel Multiverse · d616</p><h1>L'ultima<br>generazione</h1><p class="s">Plus Ultra</p></div>`;
   } else if(live.mode==='scena'){
-    h=`<div class="tv-scene" style="${bg?`background-image:url('${bg}')`:''}"><div class="tv-cap"><h2>${esc(sc.title||'')}</h2>${sc.sub?`<p>${esc(sc.sub)}</p>`:''}</div></div>`;
+    h=`<div class="tv-scene${(live.ov||[]).length?' has-ov':''}" style="${bg?`background-image:url('${bg}')`:''}"><div class="tv-cap"><h2>${esc(sc.title||'')}</h2>${sc.sub?`<p>${esc(sc.sub)}</p>`:''}</div></div>`;
   } else if(live.mode==='personaggio'&&live.show){
     h=live.show.t==='pg'?tvPg(store.chars.find(c=>c.id===live.show.id),live.show.look):tvPng(pngOf(live.show.id),live.show.look);
   } else if(live.mode==='fight'&&live.fight){
@@ -2996,6 +3101,9 @@ function renderTV(){
     h=`<div class="tv-clue ${esc(x.style||'foglio')}"><div class="paper"><h2>${esc(x.title||'')}</h2>
       ${img?`<div class="cimg"><img src="${esc(img)}" alt=""><div class="cover" style="height:${100-step*25}%"><span>?</span></div></div>`:''}
       <div class="ctext">${lines.map((l,i)=>`<p class="${i<k?'':'hid'}">${i<k?esc(l):'█████ ███ ██████'}</p>`).join('')}</div></div></div>`;
+  } else if(live.mode==='esame'){ h=tvExam();
+  } else if(live.mode==='classifica'){ h=tvChart();
+  } else if(live.mode==='ammessi'){ h=tvAdmit();
   } else if(live.mode==='tg'){
     const tg=R.tg||{}; const ln=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean);
     const rank=ln(tg.rank).map(r=>{ const p=r.split('|').map(x=>x.trim()); const tr=p[2]||''; return `<li><span class="pos">${esc(p[0]||'')}</span><span class="nm">${esc(p[1]||r)}</span><span class="trend ${/▲|\+/.test(tr)?'up':/▼|-/.test(tr)?'dn':''}">${esc(tr)}</span></li>`; }).join('');
@@ -3011,10 +3119,85 @@ function renderTV(){
   }
   const shown=(live.counters||[]).filter(c=>c.show); let hc='';
   if(shown.length) hc=`<div class="tv-counters${live.mode==='fight'?' f':''}">${shown.map(c=>`<div class="tv-cnt${cZero(c)?' zero':''}"><span>${esc(c.label||'')}</span><b>${cDisp(c)}${c.type==='round'?'<small> round</small>':''}</b></div>`).join('')}</div>`;
-  if(box._main!==h||!box.querySelector('#tvCntBox')){ box._main=h; box.innerHTML=`<div class="tv-mainw">${h}</div><div id="tvCntBox">${hc}</div>`; }
-  else { const cb=box.querySelector('#tvCntBox'); if(cb.innerHTML!==hc) cb.innerHTML=hc; }
+  if(!box.querySelector('#tvCntBox')){ box.innerHTML='<div class="tv-mainw"></div><div id="tvOvBox" class="tv-ov"></div><div id="tvCntBox"></div>'; box._main=null; }
+  if(box._main!==h){ box._main=h; box.querySelector('.tv-mainw').innerHTML=h; }
+  const cb=box.querySelector('#tvCntBox'); if(cb.innerHTML!==hc) cb.innerHTML=hc;
+  renderOv(box.querySelector('#tvOvBox'));
   playMusic();
 }
+
+/* ---------- personaggi sopra la scena ---------- */
+function ovFull(o){
+  if(o.t==='pg'){ const c=store.chars.find(x=>x.id===o.id); if(!c) return null; const m=IMG[c.id]||{}; return {name:c.name||'PG',color:c.color,src:(o.look&&m[o.look])||m.hero||m.uniform||m.casual||''}; }
+  const p=pngOf(o.id); if(!p) return null; const l=lookOf(p,o.look); return {name:p.hero||p.name,color:p.color||'#5b6478',src:l?srcOf(l.img):''};
+}
+function renderOv(box){
+  if(!box) return;
+  if(live.mode!=='scena'){ if(box.firstChild) box.innerHTML=''; return; }
+  const items=live.mode==='scena'?(live.ov||[]).map(o=>Object.assign({k:o.t+':'+o.id+':'+(o.look||'')},ovFull(o)||{})).filter(x=>x.src):[];
+  const n=items.length, keys=new Set(items.map(i=>i.k));
+  box.querySelectorAll('.tv-ovf').forEach(el=>{ if(!keys.has(el.dataset.k)&&!el.classList.contains('out')){ el.classList.add('out'); el.classList.remove('inL','inR'); setTimeout(()=>el.remove(),480); } });
+  const w=n<=1?34:n===2?32:Math.min(28,92/n);
+  items.forEach((it,i)=>{
+    const x=n===1?74:n===2?[24,76][i]:6+88*(i+.5)/n;
+    let el=[...box.querySelectorAll('.tv-ovf:not(.out)')].find(e=>e.dataset.k===it.k);
+    if(!el){ el=document.createElement('div'); el.className='tv-ovf '+(x<50?'inL':'inR'); el.dataset.k=it.k; box.appendChild(el); }
+    const html=`<img src="${esc(it.src)}" alt=""><span class="tv-ovn">${esc(String(it.name).toUpperCase())}</span>`;
+    if(el._h!==html){ el._h=html; el.innerHTML=html; }
+    el.style.left=x+'vw'; el.style.width=w+'vw'; el.style.setProperty('--pc',/^#[0-9a-f]{6}$/i.test(it.color||'')?it.color:'#2a9d8f');
+  });
+}
+/* ---------- chi è: collega un nome scritto a un PG o PNG per foto e colore ---------- */
+function whoOf(nm){
+  const s=String(nm||'').toLowerCase().replace(/\s*\(.*?\)\s*/g,' ').trim(); if(!s) return null;
+  const c=store.chars.find(c=>{ const n=String(c.name||'').toLowerCase().trim(); return n===s||(n.split(/\s+/)[0]===s.split(/\s+/)[0]&&s.split(/\s+/)[0].length>2)||(c.hero&&String(c.hero).toLowerCase()===s); });
+  if(c){ const f=imgOf(c.id,'face'); return {pg:true,id:c.id,color:c.color,src:portraitOf(c),crop:f?cropOf(c,'face'):thumbCropOf(c)}; }
+  const p=R.pngs.find(p=>{ const n=String(p.name||'').toLowerCase().replace(/\s*\(.*?\)\s*/g,' ').trim(), h=String(p.hero||'').toLowerCase().trim(), al=(String(p.name||'').match(/\((.*?)\)/)||[])[1]; return n===s||(h&&h===s)||(al&&al.toLowerCase()===s); });
+  if(p){ const th=pngThumb(p); return {pg:false,id:p.id,color:p.color,src:th?th.src:'',crop:th?th.crop:null}; }
+  return null;
+}
+function miniHtml(w,label){ const col=w&&/^#[0-9a-f]{6}$/i.test(w.color||'')?w.color:'#334'; return `<span class="mini" style="--pc:${col}">${w&&w.src?`<img src="${esc(w.src)}" alt=""${w.crop?` style="${cropCss(w.crop)}"`:''}>`:`<i>${esc(String(label||'?')[0].toUpperCase())}</i>`}</span>`; }
+const lnOf=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean);
+function examRows(){
+  const L=lnOf((R.tg||{}).exam).map(r=>{ const p=r.split('|').map(x=>x.trim()); return {name:p[0]||r,pts:parseFloat(p[1])||0,cls:p[2]||''}; }).sort((a,b)=>b.pts-a.pts);
+  let pos=0,last=null; L.forEach((r,i)=>{ if(r.pts!==last){ pos=i+1; last=r.pts; } r.pos=pos; r.w=whoOf(r.name); });
+  return L;
+}
+function colsFor(n,max){ const cols=n>max?2:1; const rows=Math.max(1,Math.ceil(n/cols)); return {cols,rows}; }
+function tvExam(){
+  const L=examRows(), n=L.length; if(!n) return `<div class="tv-title"><p class="k">Nessun risultato: scrivili in Regia</p></div>`;
+  const {cols,rows}=colsFor(n,10), rh=`calc((100vh - 23vh) / ${rows})`;
+  return `<div class="tv-exam"><div class="ex-head"><span class="ua">U.A.</span><div><h2>Esame d'ammissione · Risultati</h2><p>雄英高校 · Prova pratica · punti dei robot</p></div></div>
+    <ol class="ex-list" style="--rows:${rows};--cols:${cols};--rh:${rh}">${L.map((r,i)=>{ const pc=r.w&&r.w.pg&&/^#[0-9a-f]{6}$/i.test(r.w.color||'')?r.w.color:''; const no=/non|esclus|boccia/i.test(r.cls);
+      return `<li class="${pc?'pg':''}${r.pos===1?' top':''}${no?' no':''}" style="${pc?`--pc:${pc};`:''}--d:${(.5+(n-1-i)*.22).toFixed(2)}s"><span class="pos">${r.pos}</span>${miniHtml(r.w,r.name)}<span class="nm">${esc(r.name)}</span>${r.cls?`<span class="cls">${esc(r.cls)}</span>`:'<span></span>'}<b class="pt">${esc(String(r.pts))}<small>pt</small></b></li>`; }).join('')}</ol></div>`;
+}
+function trCls(t){ return /▲|\+|su/i.test(t)?'up':/▼|-|giù/i.test(t)?'dn':'eq'; }
+function tvChart(){
+  const L=lnOf((R.tg||{}).chart).map(r=>{ const p=r.split('|').map(x=>x.trim()); return {pos:p[0],hero:p[1]||r,tr:p[2]||'',real:p[3]||''}; });
+  if(!L.length) return `<div class="tv-title"><p class="k">Classifica vuota: scrivila in Regia</p></div>`;
+  L.forEach(r=>{ r.w=whoOf(r.hero)||whoOf(r.real); });
+  const top=L.slice(0,3), rest=L.slice(3), {cols,rows}=colsFor(rest.length,13), rh=`calc((100vh - 20vh) / ${Math.max(rows,8)})`;
+  const hl=(R.tg||{}).chartHl||'Shield';
+  return `<div class="tv-chart"><div class="ch-head"><h2>Hero Billboard Chart JP</h2><span>ヒーロービルボードチャートJP</span></div>
+    <div class="ch-pod">${top.map((r,i)=>{ const pc=r.w&&/^#[0-9a-f]{6}$/i.test(r.w.color||'')?r.w.color:['#ffe100','#c9d1e6','#d08a4a'][i];
+      return `<div class="ch-top${r.w&&r.w.src?'':' nomini'}" style="--pc:${pc};--d:${(2.6-i*.6).toFixed(2)}s">${r.w&&r.w.src?miniHtml(r.w,r.hero):''}<div><b>${esc(r.hero)}</b>${r.real?`<small>${esc(r.real)}</small>`:''}${r.tr?`<em class="${trCls(r.tr)}">${esc(r.tr)}</em>`:''}</div><span class="rk">${esc(r.pos)}</span></div>`; }).join('')}</div>
+    <ol class="ch-list" style="--rows:${Math.max(rows,8)};--cols:${cols};--rh:${rh}">${rest.map((r,i)=>{ const pc=r.w&&/^#[0-9a-f]{6}$/i.test(r.w.color||'')?r.w.color:'#3a4a80'; const on=hl&&r.hero.toLowerCase()===String(hl).toLowerCase();
+      return `<li class="${on?'hl':''}${r.w&&r.w.src?'':' nomini'}" style="--pc:${pc};--d:${(.4+i*.06).toFixed(2)}s"><span class="pos">${esc(r.pos)}</span>${r.w&&r.w.src?miniHtml(r.w,r.hero):''}<span class="nm">${esc(r.hero)}${r.real?`<small>${esc(r.real)}</small>`:''}</span><span class="trd ${trCls(r.tr)}">${esc(r.tr)}</span></li>`; }).join('')}</ol></div>`;
+}
+function tvAdmit(){
+  const ex=examRows();
+  let L=store.chars.map(c=>({name:c.name||'PG',w:whoOf(c.name)}));
+  if(live.admitAll) R.pngs.filter(p=>folderOf(p)==='Classe 1-A').forEach(p=>{ const th=pngThumb(p); L.push({name:String(p.name||'').replace(/\s*\(.*?\)\s*/g,' ').trim(),w:{pg:false,color:p.color,src:th?th.src:'',crop:th?th.crop:null}}); });
+  L.forEach(x=>{ const r=ex.find(e=>whoOf(e.name)&&x.w&&whoOf(e.name).id===x.w.id)||ex.find(e=>e.name.toLowerCase()===x.name.toLowerCase()); x.pts=r?r.pts:null; x.order=r?r.pos:999; });
+  L.sort((a,b)=>a.order-b.order);
+  const n=L.length, per=n<=6?n:Math.ceil(n/2), cw=`min(${n<=6?15:11}vw, calc(${n<=6?60:30}vh), calc(88vw / ${per} - 1.6vw))`;
+  const step=n>8?.32:.5, df=(1.6+n*step+.7).toFixed(2);
+  return `<div class="tv-adm"><div class="adm-crest"><b>U.A.</b></div><p class="adm-k">Esito dell'esame d'ammissione</p>
+    <div class="adm-cards" style="--cw:${cw}">${L.map((x,i)=>{ const pc=x.w&&/^#[0-9a-f]{6}$/i.test(x.w.color||'')?x.w.color:'#2a9d8f';
+      return `<div class="adm-card" style="--pc:${pc};--d:${(1.6+i*step).toFixed(2)}s">${miniHtml(x.w,x.name)}<span class="adm-stamp">AMMESSO</span><p>${esc(x.name.split(/\s+/)[0].toUpperCase())}${x.pts!=null?`<small>${esc(String(x.pts))} punti</small>`:''}</p></div>`; }).join('')}</div>
+    <div class="adm-final" style="--df:${df}s"><b>CLASSE 1-A</b><span>Benvenuti alla U.A. · Plus Ultra!</span></div></div>`;
+}
+
 function tvProfile(o){
   const nm=(o.name||'Senza nome').toUpperCase(), hero=(o.hero||'').toUpperCase();
   const rows=o.rows.filter(r=>r[1]), cv=o.cv&&o.cv[1]?o.cv:null;
