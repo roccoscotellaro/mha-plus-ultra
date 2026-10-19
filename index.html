@@ -724,9 +724,9 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tvo-bg{position:absolute;inset:0;background-image:conic-gradient(#e3e3e3 25%,transparent 0 50%,#e3e3e3 0 75%,transparent 0);background-size:1.5vw 1.5vw;opacity:.95}
 .tvo-band{position:absolute;left:-5%;right:-5%;background:#fbfbfb;transform:rotate(-2.2deg);box-shadow:0 0 0 .15vw #ececec}
 .tvo-band.b1{top:35%;height:21%}.tvo-band.b2{top:59%;height:10%}.tvo-band.b3{top:72%;height:15%}
-.tvo-face{position:absolute;left:0;top:5%;width:47%;height:28%;overflow:hidden;clip-path:polygon(0 9%,100% 0,100% 91%,0 100%);background:#ddd}
+.tvo-face{position:absolute;left:0;top:3.5%;height:31vh;width:calc(31vh * 16 / 9);max-width:52%;overflow:hidden;clip-path:polygon(0 4%,100% 0,98% 100%,0 96%);background:#ddd}
 .tvo-face img{width:100%;height:100%;object-fit:cover;object-position:50% 0}
-.tvo-text{position:absolute;left:4.5%;top:35%;width:50%;display:flex;flex-direction:column;gap:.6vh;z-index:3}
+.tvo-text{position:absolute;left:4.5%;top:36.5%;width:50%;display:flex;flex-direction:column;gap:.6vh;z-index:3}
 .tvo.noface .tvo-text{top:16%}
 .tvo.multi .tvo-text{width:44%}
 .tvo-tag{align-self:flex-start;font-size:1.5vw;letter-spacing:.12em;color:#fff;background:var(--ink);padding:.1vh 1vw;transform:skewX(-10deg);margin-bottom:.6vh}
@@ -1046,7 +1046,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 19:30</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2587,7 +2587,7 @@ function renderRegia(){
   h+=`<section class="rg-box"><div class="rg-h"><h3>Musica</h3><span class="hint" style="margin:0">I brani si caricano dallo Schermo, sul dispositivo collegato alla TV.</span></div>
     <div class="rg-row">${tr.length?`<select id="rgTrack" aria-label="Brano">${opt('','— Nessun brano —',live.music.track)}${tr.filter(t=>t.cat!=='sfx'&&t.cat!=='stacco').map(t=>opt(t.id,(t.cat==='fight'?'⚔ ':'')+t.name,live.music.track)).join('')}</select>
     <button class="btn sm" data-rg="tprev" aria-label="Brano precedente">⏮</button><button class="btn sm${live.music.playing?' primary':''}" data-rg="play">${live.music.playing?'Pausa':'Play'}</button><button class="btn sm" data-rg="tnext" aria-label="Brano successivo">⏭</button>
-    <label class="rg-chk"><input type="checkbox" id="rgLoop"${live.music.loop!==false?' checked':''}> Ripeti il brano</label><label class="rg-chk"><input type="checkbox" id="rgSting"${live.music.sting!==false?' checked':''}> Stacco al cambio scena</label>
+    <label class="rg-chk"><input type="checkbox" id="rgLoop"${live.music.loop!==false?' checked':''}> Ripeti il brano</label><label class="rg-chk"><input type="checkbox" id="rgSting"${live.music.sting!==false?' checked':''}> Stacco al cambio scena</label><label class="rg-vol">Stacco <select id="rgStingT" aria-label="Brano dello stacco di scena">${opt('','— il brano segnato come Stacco —',live.music.stingId||'')}${tr.map(t=>opt(t.id,(t.cat==='stacco'?'✦ ':'')+t.name,live.music.stingId||'')).join('')}</select></label><button class="btn sm" data-rg="teststing">Prova stacco</button>
     <label class="rg-vol">Volume <input type="range" id="rgVol" min="0" max="1" step="0.05" value="${live.music.vol}"></label>
     <label class="rg-chk"><input type="checkbox" id="rgAuto"${live.music.auto?' checked':''}> Cambia da sola con scene e fight</label><span class="hint" style="margin:0;flex-basis:100%">Senza "Ripeti", a fine brano parte il successivo dello stesso tipo (scena o fight).</span>`:'<p class="hint" style="margin:0">Nessun brano ancora: apri la sezione Schermo sul PC della TV e carica gli mp3 da lì.</p>'}</div></section>`;
   // contatori
@@ -2818,6 +2818,7 @@ document.addEventListener('change',e=>{
   else if(t.id==='rgAuto'){ live.music.auto=t.checked; saveLive(); }
   else if(t.id==='rgLoop'){ live.music.loop=t.checked; saveLive(); }
   else if(t.id==='rgSting'){ live.music.sting=t.checked; saveLive(); }
+  else if(t.id==='rgStingT'){ live.music.stingId=t.value; saveLive(); }
   else if(t.id==='rgSkip'){ live.fight.skipDown=t.checked; saveLive(); }
   else if(t.dataset.cshow){ const c=(live.counters||[]).find(x=>x.id===t.dataset.cshow); if(c){ c.show=t.checked; saveLive(); } }
   else if(t.id==='aFrom'){ atk.from=t.value; atk.pw=''; if(atk.to===atk.from) atk.to=''; atk.roll=''; atk.md=''; atk.dmg=''; renderRegia(); }
@@ -2857,6 +2858,7 @@ document.addEventListener('click',async e=>{
   else if(a==='ctime'){ const c=live.counters.find(x=>x.id===id); if(!c) return; if(c.running){ c.remain=cMs(c); c.running=false; } else { if(cMs(c)<=0) c.remain=c.total; c.endAt=Date.now()+(+c.remain||0); c.running=true; } saveLive(); }
   else if(a==='creset'){ const c=live.counters.find(x=>x.id===id); if(!c) return; c.running=false; c.remain=c.total; saveLive(); }
   else if(a==='cdel'){ live.counters=live.counters.filter(x=>x.id!==id); saveLive(); }
+  else if(a==='teststing'){ const sc0=R.scenes.find(x=>x.id===live.sceneId); live.trans={at:Date.now(),title:(sc0&&sc0.title)||'Prova stacco'}; saveLive(); toast('Stacco inviato allo schermo'); }
   else if(a==='showscene'){ if(live.music.sting!==false&&(id!==live.sceneId||live.mode!=='scena')){ const sc0=R.scenes.find(x=>x.id===id); live.trans={at:Date.now(),title:(sc0&&sc0.title)||''}; } live.sceneId=id; if(live.mode!=='fight') live.mode='scena'; autoMusic(live.mode==='fight'?'fight':'scena'); saveLive(); }
   else if(a==='showpg'){ live.show={t:'pg',id,look:b.dataset.look||''}; live.mode='personaggio'; saveLive(); }
   else if(a==='showpng'){ live.show={t:'png',id,look:b.dataset.look||''}; live.mode='personaggio'; saveLive(); }
@@ -3048,7 +3050,7 @@ function initTV(){
   $('#tvFiles').onchange=async e=>{ const fs=Array.from(e.target.files||[]); e.target.value='';
     for(const f of fs){ if(!/^audio\//.test(f.type)&&!/\.(mp3|m4a|ogg|wav|aac|flac)$/i.test(f.name)) continue; await idbPut({id:rid(),name:f.name.replace(/\.[^.]+$/,''),cat:/fight|battle|boss|combat|lotta/i.test(f.name)?'fight':'scena',blob:f}); }
     await loadLocalTracks(); publishTracks(); toast('Brani aggiunti'); };
-  $('#tvPanel').addEventListener('change',async e=>{ const id=e.target.dataset.tcat; if(!id) return; const t=localTracks.find(x=>x.id===id); if(t){ t.cat=e.target.value; await idbPut(t); publishTracks(); } });
+  $('#tvPanel').addEventListener('change',async e=>{ const id=e.target.dataset.tcat; if(!id) return; const t=localTracks.find(x=>x.id===id); if(t){ t.cat=e.target.value; try{ await idbPut(t); toast('Salvato: '+t.name+' → '+({scena:'Scena',fight:'Fight',sfx:'Effetto',stacco:'Stacco di scena'}[t.cat]||t.cat)); }catch(err){ toast('Non riesco a salvare il brano su questo dispositivo'); } publishTracks(); } });
   $('#tvPanel').addEventListener('click',async e=>{ const b=e.target.closest('[data-tdel]'); if(!b) return; await idbDel(b.dataset.tdel); await loadLocalTracks(); publishTracks(); });
   loadLocalTracks().then(()=>{ if(localTracks.length) publishTracks(); });
 }
@@ -3073,7 +3075,7 @@ function checkFx(){
   if(tr&&tr.at&&tr.at!==lastTrans){ lastTrans=tr.at; if(Date.now()-tr.at<8000){
     const el=$('#tvEye'); el.innerHTML=`<div class="ey-bg"></div><div class="ey-band"></div><div class="ey-txt"><b>${esc(tr.title||'')}</b><span>PLUS ULTRA</span></div>`;
     el.hidden=false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
-    const st=localTracks.filter(x=>x.cat==='stacco'); if(st.length){ const pick=st[Math.floor(Math.random()*st.length)]; const m=PL[pi], v=+live.music.vol||.8; if(curTrack&&!m.paused){ fade(m,v*.15,250); setTimeout(()=>fade(m,v,900),2600); } sfxPlay(pick.id,v); }
+    const chosen=live.music.stingId&&localTracks.find(x=>x.id===live.music.stingId); const st=chosen?[chosen]:localTracks.filter(x=>x.cat==='stacco'); if(st.length){ const pick=st[Math.floor(Math.random()*st.length)]; const m=PL[pi], v=+live.music.vol||.8; if(curTrack&&!m.paused){ fade(m,v*.15,250); setTimeout(()=>fade(m,v,900),2600); } sfxPlay(pick.id,v); }
     clearTimeout(eyeTimer); eyeTimer=setTimeout(()=>{ el.classList.remove('on'); el.hidden=true; },2700);
   } }
   const s=live.sfx;
