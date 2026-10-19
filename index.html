@@ -779,6 +779,17 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tvo.light .tvo-blurb{color:#2a2a2a}
 .tvo.light .tvo-big{color:rgba(20,20,20,.16)}
 
+
+/* riquadri semitrasparenti dalle forme irregolari, per leggere meglio sul colore */
+.tvo-pan{position:relative;align-self:flex-start;max-width:100%;padding:1.4vh 2.2vw 1.6vh 1.6vw;display:flex;flex-direction:column;gap:.5vh}
+.tvo-pan::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(7,9,15,.42)}
+.tvo-pan.p1::before{clip-path:polygon(0 7%,97% 0,100% 88%,3% 100%)}
+.tvo-pan.p2{margin-top:1.2vh}
+.tvo-pan.p2::before{clip-path:polygon(2% 0,100% 5%,97% 100%,0 93%)}
+.tvo-pan .tvo-cv{margin:0 0 .8vh}
+.tvo-pan .tvo-furi{margin:0 0 -.4vh .3vw}
+.tvo.light .tvo-pan::before{background:rgba(255,255,255,.5)}
+.tvo-text{isolation:isolate}
 /* ===== Stacco di scena (eyecatch) ===== */
 .tv-eye{position:fixed;inset:0;z-index:22;pointer-events:none;overflow:hidden;display:grid;place-items:center}
 .tv-eye .ey-bg{position:absolute;inset:-10%;background:#f7f7f7;background-image:conic-gradient(#e3e3e3 25%,transparent 0 50%,#e3e3e3 0 75%,transparent 0);background-size:1.5vw 1.5vw;transform:translateX(-120%) skewX(-12deg)}
@@ -2969,12 +2980,12 @@ function tvProfile(o){
     <div class="tvo-big" aria-hidden="true">${esc(nm)}${hero?` “${esc(hero)}”`:''}</div>
     <div class="tvo-text">
       ${o.tag?`<div class="tvo-tag${o.foe?' foe':''}">${esc(o.tag)}</div>`:''}
-      ${o.jpReading?`<p class="tvo-furi">${esc(o.jpReading)}</p>`:''}
+      <div class="tvo-pan p1">${o.jpReading?`<p class="tvo-furi">${esc(o.jpReading)}</p>`:''}
       ${o.jpName?`<p class="tvo-kanji">${esc(o.jpName)}${o.jpHero?`<small>(${esc(o.jpHero)})</small>`:''}</p>`:`<p class="tvo-kanji lat">${esc(hero||nm)}</p>`}
-      <p class="tvo-romaji">${esc(nm)}${hero?` “${esc(hero)}”`:''}</p>
-      ${cv?`<p class="tvo-cv"><b>${esc(cv[0])} :</b>${esc(cv[1])}</p>`:''}
+      <p class="tvo-romaji">${esc(nm)}${hero?` “${esc(hero)}”`:''}</p></div>
+      ${(cv||rows.length||o.blurb)?'<div class="tvo-pan p2">':''}${cv?`<p class="tvo-cv"><b>${esc(cv[0])} :</b>${esc(cv[1])}</p>`:''}
       ${rows.length?`<dl class="tvo-rows">${rows.map(r=>`<div><dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd></div>`).join('')}</dl>`:''}
-      ${o.blurb?`<p class="tvo-blurb">${esc(o.blurb)}</p>`:''}
+      ${o.blurb?`<p class="tvo-blurb">${esc(o.blurb)}</p>`:''}${(cv||rows.length||o.blurb)?'</div>':''}
     </div>
     ${figs.length?`<div class="tvo-figs" data-n="${figs.length}">${figs.map((f,i)=>`<img class="${i?'alt':''}" src="${esc(f)}" alt="">`).join('')}</div>`:`<div class="tvo-noimg" aria-hidden="true">${esc(nm[0]||'?')}</div>`}
   </div>`;
