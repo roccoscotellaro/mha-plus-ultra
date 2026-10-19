@@ -724,7 +724,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tvo-bg{position:absolute;inset:0;background-image:conic-gradient(#e3e3e3 25%,transparent 0 50%,#e3e3e3 0 75%,transparent 0);background-size:1.5vw 1.5vw;opacity:.95}
 .tvo-band{position:absolute;left:-5%;right:-5%;background:#fbfbfb;transform:rotate(-2.2deg);box-shadow:0 0 0 .15vw #ececec}
 .tvo-band.b1{top:35%;height:21%}.tvo-band.b2{top:59%;height:10%}.tvo-band.b3{top:72%;height:15%}
-.tvo-face{position:absolute;left:0;top:3.5%;height:31vh;width:calc(31vh * 16 / 9);max-width:52%;overflow:hidden;clip-path:polygon(0 4%,100% 0,98% 100%,0 96%);background:#ddd}
+.tvo-face{position:absolute;left:0;top:3.5%;overflow:hidden;clip-path:polygon(0 4%,100% 0,98% 100%,0 96%);background:#ddd}
 .tvo-face img{width:100%;height:100%;object-fit:cover;object-position:50% 0}
 .tvo-text{position:absolute;left:4.5%;top:36.5%;width:50%;display:flex;flex-direction:column;gap:.6vh;z-index:3}
 .tvo.noface .tvo-text{top:16%}
@@ -1046,7 +1046,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 19:30</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 19:45</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -1070,6 +1070,7 @@ body.tvmode{overflow:hidden;background:#07090f}
   <div class="dbody">
     <p class="hint" id="cropHint">Trascina l'immagine per spostarla e usa lo zoom per ingrandire.</p>
     <div class="cropframe" id="cropFrame"><img id="cropImg" alt="" draggable="false"></div>
+    <div class="croprow" id="cropHRow"><label for="cropH"><b>Altezza del taglio</b></label><input type="range" id="cropH" min="20" max="80" step="1" value="56"><span id="cropHv">16:9</span></div>
     <div class="croprow"><label for="cropZoom"><b>Zoom</b></label><input type="range" id="cropZoom" min="1" max="4" step="0.05" value="1"><span id="cropZv">1×</span></div>
     <div class="croprow"><button class="btn sm ghost" id="cropReset">Ripristina</button><span style="flex:1"></span><button class="btn sm" id="cropCancel">Annulla</button><button class="btn sm primary" id="cropOk">Salva</button></div>
   </div>
@@ -1880,7 +1881,8 @@ const SLOTS=['face','uniform','hero','casual'];
 const OUTLBL={uniform:'Uniforme scolastica',hero:'Costume da eroe',casual:'Abiti casual'};
 const imgOf=(id,s)=>((IMG[id]||{})[s]||'');
 function portraitOf(c){ const m=IMG[c.id]||{}; return m.face||m.hero||m.uniform||m.casual||c.photo||''; }
-function cropOf(c,k){ const v=(c&&c[k==='thumb'?'thumb':'faceCrop'])||{}; const n=(x,d,lo,hi)=>{x=+x;return isFinite(x)?Math.min(hi,Math.max(lo,x)):d}; return {x:n(v.x,50,0,100),y:n(v.y,0,0,100),z:n(v.z,1,1,4)}; }
+function cropOf(c,k){ const v=(c&&c[k==='thumb'?'thumb':'faceCrop'])||{}; const n=(x,d,lo,hi)=>{x=+x;return isFinite(x)?Math.min(hi,Math.max(lo,x)):d}; return {x:n(v.x,50,0,100),y:n(v.y,0,0,100),z:n(v.z,1,1,4),h:n(v.h,56.25,20,80)}; }
+function faceBoxCss(cr){ const h=(cr&&cr.h)||56.25, r=(100/h).toFixed(4); return `aspect-ratio:${r};width:min(46vw, calc(34vh * ${r}));height:auto`; }
 // Figurina in alto: usa l'Anteprima del master se c'è; altrimenti, se la figurina mostra il primo piano, la sua inquadratura.
 function thumbCropOf(c){ if(c&&c.thumb) return cropOf(c,'thumb'); if(c&&c.faceCrop&&imgOf(c.id,'face')) return cropOf(c,'face'); return cropOf(c,'thumb'); }
 // colore chiaro (giallo, rosa chiaro, bianco...): il giallo dei nomi non si leggerebbe
@@ -1900,6 +1902,7 @@ function renderProfile(){
   $('#pOutfitEmpty').hidden=!!o; $('#pOutfitLbl').textContent=OUTLBL[outfit]; $('#pOutfitRm').hidden=!o;
   const f=imgOf(C.id,'face'), fi=$('#pFace');
   fi.hidden=!f; if(f){ fi.src=f; fi.alt='Primo piano di '+(C.name||'personaggio'); fi.style.cssText=cropCss(cropOf(C,'face')); } else fi.removeAttribute('src');
+  { const fb=document.querySelector('#profile .face'); if(fb) fb.style.aspectRatio=f?String(100/cropOf(C,'face').h):''; }
   $('#pFaceCrop').hidden=!f;
   $('#pFaceEmpty').hidden=!!f; $('#pFaceRm').hidden=!f;
 }
@@ -2008,9 +2011,9 @@ $('#imgIn').onchange=async e=>{
 
 /* ---------- inquadratura immagini ---------- */
 const cropDlg=$('#cropDlg'); let cropK='face', cropV={x:50,y:0,z:1}, cropDrag=null, cropCb=null;
-function cropApply(){ $('#cropImg').style.cssText=cropCss(cropV); $('#cropZoom').value=cropV.z; $('#cropZv').textContent=(+cropV.z).toFixed(1).replace(/\.0$/,'')+'×'; }
+function cropApply(){ $('#cropImg').style.cssText=cropCss(cropV); const isF=cropK==='face'; $('#cropHRow').hidden=!isF; if(isF){ const h=cropV.h||56.25; $('#cropFrame').style.aspectRatio=String(100/h); $('#cropH').value=Math.round(h); $('#cropHv').textContent=h<30?'striscia':h<45?'larga':h<62?'16:9':'alta'; } else $('#cropFrame').style.aspectRatio=''; $('#cropZoom').value=cropV.z; $('#cropZv').textContent=(+cropV.z).toFixed(1).replace(/\.0$/,'')+'×'; }
 function cropOpen(o){
-  cropK=o.kind; cropV=Object.assign({x:50,y:0,z:1},o.val||{}); cropCb=o.save||null;
+  cropK=o.kind; cropV=Object.assign({x:50,y:0,z:1,h:56.25},o.val||{}); cropCb=o.save||null;
   $('#cropTitle').textContent=o.title||'Inquadratura';
   $('#cropHint').textContent=o.hint||'Trascina l\'immagine per spostarla e usa lo zoom per ingrandire.';
   $('#cropFrame').className='cropframe '+(o.kind==='thumb'?'thumb':'face');
@@ -2038,10 +2041,11 @@ $('#cropFrame').addEventListener('pointermove',e=>{
 });
 ['pointerup','pointercancel'].forEach(t=>$('#cropFrame').addEventListener(t,()=>{ cropDrag=null; }));
 $('#cropFrame').addEventListener('wheel',e=>{ e.preventDefault(); cropV.z=Math.min(4,Math.max(1,+(cropV.z-e.deltaY*0.002).toFixed(2))); cropApply(); },{passive:false});
-$('#cropReset').onclick=()=>{ cropV={x:50,y:0,z:1}; cropApply(); };
+$('#cropH').oninput=e=>{ cropV.h=+e.target.value; cropApply(); };
+$('#cropReset').onclick=()=>{ cropV={x:50,y:0,z:1,h:56.25}; cropApply(); };
 $('#cropCancel').onclick=$('#cropClose').onclick=()=>cropDlg.close();
 cropDlg.addEventListener('click',e=>{ if(e.target===cropDlg) cropDlg.close(); });
-$('#cropOk').onclick=()=>{ const cb=cropCb, v={x:cropV.x,y:cropV.y,z:+cropV.z}; cropDlg.close(); if(cb) cb(v); };
+$('#cropOk').onclick=()=>{ const cb=cropCb, v={x:cropV.x,y:cropV.y,z:+cropV.z}; if(cropK==='face') v.h=+cropV.h||56.25; cropDlg.close(); if(cb) cb(v); };
 
 /* ---------- dialogo poteri / tratti / tag ---------- */
 const dlg=$('#dlg');
@@ -2711,7 +2715,7 @@ function editorHtml(){
       <label class="w2">Testo da mostrare ai giocatori<textarea id="ePub" rows="2">${esc(o.pub||'')}</textarea></label>
       <div class="rg-sec">Immagini</div>
       <div class="rg-img" style="grid-column:1/-1">
-        <div><div class="rg-faceprev">${fsrc?`<img src="${esc(fsrc)}" alt="" style="${cropCss(cropOf(o,'face'))}">`:'Primo piano'}</div>
+        <div><div class="rg-faceprev" style="aspect-ratio:${100/cropOf(o,'face').h}">${fsrc?`<img src="${esc(fsrc)}" alt="" style="${cropCss(cropOf(o,'face'))}">`:'Primo piano'}</div>
           <div class="rg-acts" style="margin-top:6px"><button class="btn sm" data-rg="eface">Carica primo piano</button>${fsrc?`<button class="btn sm" data-rg="cropface">Inquadra</button><button class="btn sm ghost" data-rg="rmface">Togli</button>`:''}</div></div>
         <div><div class="rg-thprev">${th?`<img src="${esc(th.src)}" alt="" style="${cropCss(th.crop)}">`:'Figurina'}</div>
           <div class="rg-acts" style="margin-top:6px">${th?`<button class="btn sm" data-rg="cropthumb">Inquadra figurina</button>`:''}</div></div>
@@ -2979,9 +2983,9 @@ function tvProfile(o){
   const col=/^#[0-9a-f]{6}$/i.test(o.color||'')?o.color:'#2a9d8f';
   return `<div class="tvo${figs.length>1?' multi':''}${o.face?'':' noface'}${isLightCol(col)?' light':''}" style="--pc:${esc(col)}">
     <div class="tvo-bg"></div><div class="tvo-band b1"></div><div class="tvo-band b2"></div><div class="tvo-band b3"></div>
-    ${o.face?`<div class="tvo-face"><img src="${esc(o.face)}" alt="" style="${o.faceCss||''}"></div>`:''}
+    ${o.face?`<div class="tvo-face" style="${faceBoxCss(o.faceCrop)}"><img src="${esc(o.face)}" alt="" style="${o.faceCss||''}"></div>`:''}
     <div class="tvo-big" aria-hidden="true">${esc(nm)}${hero?` “${esc(hero)}”`:''}</div>
-    <div class="tvo-text">
+    <div class="tvo-text"${o.face?` style="top:calc(min(34vh, 46vw * ${((o.faceCrop&&o.faceCrop.h)||56.25)/100}) + 6vh)"`:''}>
       ${o.tag?`<div class="tvo-tag${o.foe?' foe':''}">${esc(o.tag)}</div>`:''}
       <div class="tvo-pan p1">${o.jpReading?`<p class="tvo-furi">${esc(o.jpReading)}</p>`:''}
       ${o.jpName?`<p class="tvo-kanji">${esc(o.jpName)}${o.jpHero?`<small>(${esc(o.jpHero)})</small>`:''}</p>`:`<p class="tvo-kanji lat">${esc(hero||nm)}</p>`}
@@ -2998,14 +3002,14 @@ function tvPg(c,look){
   if(!c) return '';
   const m=IMG[c.id]||{}; const full=(look&&m[look])||m.hero||m.uniform||m.casual||'';
   const others=['hero','uniform','casual'].map(k=>m[k]).filter(v=>v&&v!==full);
-  return tvProfile({name:c.name,hero:c.hero,color:c.color,full,others,face:m.face||'',faceCss:cropCss(cropOf(c,'face')),jpName:c.jpName,jpReading:c.jpReading,jpHero:c.jpHero,
+  return tvProfile({name:c.name,hero:c.hero,color:c.color,full,others,face:m.face||'',faceCss:cropCss(cropOf(c,'face')),faceCrop:cropOf(c,'face'),jpName:c.jpName,jpReading:c.jpReading,jpHero:c.jpHero,
     tag:'Classe '+(c.classe||'1-A'),cv:['Giocatore',c.player],rows:[['Compleanno',c.birthday],['Altezza',c.height],['Quirk',c.quirk],['Gli piace',c.likes]],blurb:c.blurb});
 }
 function tvPng(p,lid){
   if(!p) return '';
   const lk=lookOf(p,lid), f=folderOf(p);
   const others=looksOf(p).filter(l=>l.img&&(!lk||l.id!==lk.id)).map(l=>srcOf(l.img));
-  return tvProfile({name:p.name,hero:p.hero,color:p.color||'#5b6478',full:lk?srcOf(lk.img):'',others,face:srcOf(p.face),faceCss:cropCss(cropOf(p,'face')),jpName:p.jpName,jpReading:p.jpReading,jpHero:p.jpHero,
+  return tvProfile({name:p.name,hero:p.hero,color:p.color||'#5b6478',full:lk?srcOf(lk.img):'',others,face:srcOf(p.face),faceCss:cropCss(cropOf(p,'face')),faceCrop:cropOf(p,'face'),jpName:p.jpName,jpReading:p.jpReading,jpHero:p.jpHero,
     tag:f!==NOFOLD?f:({nemico:'Villain',alleato:'Alleato',png:''}[p.kind]||''),foe:p.kind==='nemico',
     rows:[['Quirk',p.quirk],['Compleanno',p.birthday],['Altezza',p.height],['Gli piace',p.likes]],blurb:p.pub});
 }
