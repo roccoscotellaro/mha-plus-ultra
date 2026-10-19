@@ -901,6 +901,52 @@ body.tvmode{overflow:hidden;background:#07090f}
 @keyframes admStamp{from{transform:translate(-50%,-50%) rotate(-14deg) scale(3);opacity:0}}
 @keyframes admFinal{from{transform:scale(.3);opacity:0}}
 @keyframes admSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+/* lettera di ammissione */
+.adm-stage{position:absolute;inset:0;z-index:5;pointer-events:none}
+.adm-env{position:absolute;left:50%;top:58%;width:36vw;height:22vw;margin:-11vw 0 0 -18vw;perspective:120vw;animation:envIn .8s cubic-bezier(.2,1.2,.4,1) both,envOut .7s ease-in 3s forwards}
+.env-back,.env-front{position:absolute;inset:0;background:#e9dfc6;border:.25vh solid #c8b98f}
+.env-back{z-index:1;background:#d8cba8}
+.env-front{z-index:3;background:linear-gradient(160deg,#efe6cf,#e2d6b6);clip-path:polygon(0 0,50% 55%,100% 0,100% 100%,0 100%)}
+.env-flap{position:absolute;left:0;right:0;top:0;height:62%;z-index:4;background:linear-gradient(#e6dbbf,#d9cca9);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:50% 0;animation:envFlap .6s ease-in-out 1.15s both}
+.env-seal{position:absolute;left:50%;top:52%;width:7vw;height:7vw;margin:-3.5vw 0 0 -3.5vw;z-index:5;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-size:2.2vw;color:#fff;background:radial-gradient(circle at 35% 30%,#ff5a5a,#b5121b 70%);box-shadow:0 .4vh 0 #7a0a10,inset 0 0 0 .5vw rgba(0,0,0,.15);animation:sealPop .45s ease-in .8s forwards}
+.adm-lw{position:absolute;inset:0;z-index:2;animation:papAway .7s cubic-bezier(.5,0,.8,.4) var(--T) forwards}
+.adm-paper{position:absolute;left:50%;top:50%;width:64vw;height:86vh;margin:-43vh 0 0 -32vw;box-sizing:border-box;padding:3vh 3.4vw;background:#f7f1e3;background-image:repeating-linear-gradient(transparent 0 4.6vh,rgba(120,100,60,.12) 4.6vh calc(4.6vh + 1px));color:#2a2418;box-shadow:0 2vh 6vh rgba(0,0,0,.6);border-top:1.4vh solid #c8102e;animation:papOut 1.9s cubic-bezier(.3,.7,.3,1) 1.45s both;overflow:hidden}
+.pap-head{display:flex;align-items:center;gap:1.2vw;border-bottom:.3vh solid #c8102e;padding-bottom:1vh;margin-bottom:1.6vh}
+.pap-head b{font-family:var(--f-display);font-weight:400;font-size:3.4vw;line-height:1;color:#c8102e}
+.pap-head span{font-size:1.4vw;letter-spacing:.18em;text-transform:uppercase;color:#6b5d40}
+.pap-deku{margin-left:auto}
+.pap-deku .mini{width:7vw;height:7vw;border-radius:50%;border:.4vh solid #15803d}
+.pap-dear,.pap-l,.pap-sig{margin:0 0 1.3vh;font-size:2vw;line-height:1.38;animation:papLine .7s ease-out var(--d) both}
+.pap-dear{font-style:italic;color:#6b5d40}
+.pap-l.big{font-family:var(--f-display);font-size:3.4vw;line-height:1;color:#15803d;letter-spacing:.02em}
+.pap-sig{margin-top:2vh;text-align:right;font-family:var(--f-display);font-size:3.4vw;color:#15803d;line-height:1}
+.pap-sig small{display:block;font-family:var(--f-body);font-size:1.3vw;color:#6b5d40;letter-spacing:.1em}
+@keyframes envIn{from{transform:translateY(-80vh) rotate(-10deg)}}
+@keyframes envOut{to{transform:translateY(90vh) rotate(8deg);opacity:0}}
+@keyframes envFlap{0%{transform:rotateX(0);z-index:4}49%{z-index:4}50%{z-index:0}100%{transform:rotateX(180deg);z-index:0}}
+@keyframes sealPop{to{transform:scale(1.6);opacity:0}}
+@keyframes papOut{0%{opacity:0;transform:translateY(12vh) scale(.4)}2%{opacity:1}45%{transform:translateY(-16vh) scale(.4)}100%{transform:none;opacity:1}}
+@keyframes papLine{from{opacity:0;transform:translateY(1.4vh);filter:blur(4px)}}
+@keyframes papAway{to{transform:translateY(-115vh) rotate(-4deg)}}
+.tv-adm .adm-crest,.tv-adm .adm-k{animation-fill-mode:both}
+/* riassunto dinamico: una frase alla volta */
+.tv-rc{position:absolute;inset:0;overflow:hidden;background:#07090f;color:#fff}
+.tv-rc::before{content:"";position:absolute;inset:-20%;background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,225,0,.07) 0 4deg,transparent 4deg 9deg);animation:admSpin 60s linear infinite}
+.tv-rc.next::before{background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(225,38,47,.1) 0 4deg,transparent 4deg 9deg)}
+.rc-k{position:absolute;left:5vw;top:6vh;margin:0;font-family:var(--f-display);font-size:3.2vw;letter-spacing:.06em;color:#07090f;background:var(--tvy);padding:.4vh 1.6vw;transform:skewX(-10deg);box-shadow:.5vw .5vw 0 var(--tvr);animation:exHead .5s both}
+.rc-ep{position:absolute;right:5vw;top:7vh;margin:0;font-family:"Anton",sans-serif;font-size:1.6vw;letter-spacing:.3em;color:var(--tvmut);text-transform:uppercase}
+.rc-l{position:absolute;left:8vw;right:8vw;top:50%;margin:0;transform:translateY(-50%);font-family:var(--f-display);font-weight:400;font-size:5.2vw;line-height:1.05;letter-spacing:.02em;text-shadow:.35vw .35vw 0 #000;animation:rcIn .55s cubic-bezier(.2,.9,.3,1.2) var(--d) both,rcOut .4s ease-in var(--o) forwards}
+.rc-l.last{animation:rcIn .55s cubic-bezier(.2,.9,.3,1.2) var(--d) both}
+.rc-l em{font-style:normal;color:var(--pc,var(--tvy));-webkit-text-stroke:.12vw #000}
+.rc-bar{position:absolute;left:5vw;right:5vw;bottom:6vh;display:flex;gap:.6vw}
+.rc-bar i{flex:1;height:.8vh;background:rgba(255,255,255,.15);position:relative;overflow:hidden}
+.rc-bar i::after{content:"";position:absolute;inset:0;background:var(--tvy);transform:scaleX(0);transform-origin:0 50%;animation:rcBar linear var(--t) var(--d) forwards}
+.rc-pu{position:absolute;right:6vw;bottom:10vh;margin:0;font-family:var(--f-display);font-size:8vw;color:var(--tvy);text-shadow:.5vw .5vw 0 var(--tvr);transform:rotate(-4deg);animation:admFinal .6s cubic-bezier(.2,1.3,.4,1) var(--d) both}
+@keyframes rcIn{from{opacity:0;transform:translateY(-50%) translateX(12vw) skewX(-12deg)}}
+@keyframes rcOut{to{opacity:0;transform:translateY(-50%) translateX(-10vw) skewX(10deg)}}
+@keyframes rcBar{to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.tv-rc *{animation:none!important}.rc-l{display:none}.rc-l.last{display:block}}
 @media (prefers-reduced-motion:reduce){.tv-exam *,.tv-chart *,.tv-adm *,.tv-ovf{animation:none!important}}
 
 /* ===== Stacco di scena (eyecatch) ===== */
@@ -1159,7 +1205,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 21:30</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 22:45</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2745,10 +2791,11 @@ function renderRegia(){
       <label>Dai social, una riga per post: @nome: testo<textarea id="tgSoc" rows="6">${esc(tg.social||'')}</textarea></label>
       <label class="w2">Notizie che scorrono, una per riga<textarea id="tgTick" rows="3">${esc(tg.ticker||'')}</textarea></label>
     </div></section>`;
-  h+=`<section class="rg-box"><div class="rg-h"><h3>Classifiche e ammissione</h3><div class="rg-acts"><button class="btn sm primary" data-rg="showchart">Classifica eroi</button><button class="btn sm primary" data-rg="showexam">Risultati esame</button><button class="btn sm primary" data-rg="showadmit">Ammessi alla 1-A</button><button class="btn sm" data-rg="savetg">Salva</button></div></div>
+  h+=`<section class="rg-box"><div class="rg-h"><h3>Classifiche e ammissione</h3><div class="rg-acts"><button class="btn sm primary" data-rg="showchart">Classifica eroi</button><button class="btn sm primary" data-rg="showexam">Risultati esame</button><button class="btn sm primary" data-rg="showadmit">Lettera e ammessi</button><button class="btn sm" data-rg="showadmit2">Salta alla classe</button><button class="btn sm" data-rg="savetg">Salva</button></div></div>
     <div class="rg-form">
       <label>Hero Billboard Chart, una riga per eroe: posizione | nome da eroe | variazione | nome vero<textarea id="tgChart" rows="10" placeholder="1 | Dynamight | = | Katsuki Bakugo">${esc(tg.chart||'')}</textarea></label>
       <label>Risultati dell'esame, una riga per studente: nome | punti | classe (si ordinano da soli)<textarea id="tgExam" rows="10" placeholder="Keiko Tsukumo | 15 | 1-A">${esc(tg.exam||'')}</textarea></label>
+      <label class="w2">Lettera di Deku agli ammessi, una frase per riga (la prima è il titolo grande; se la lasci vuota uso il testo già pronto)<textarea id="tgAdm" rows="6" placeholder="${esc(ADMIT_MSG)}">${esc(tg.admitMsg||'')}</textarea></label>
       <label>Eroe da evidenziare in classifica<input id="tgHl" value="${esc(tg.chartHl||'Shield')}"></label>
       <label class="rg-chk" style="align-self:end"><input type="checkbox" id="rgAdmAll"${live.admitAll?' checked':''}> Nell'animazione degli ammessi mostra anche i compagni PNG della cartella "Classe 1-A"</label>
       <p class="hint w2" style="margin:0">Foto e colori arrivano da soli se il nome corrisponde a un PG o a un PNG. Le righe dei PG si colorano col loro colore. Scrivi "non ammesso" come classe per una riga in grigio.</p>
@@ -2984,10 +3031,10 @@ document.addEventListener('click',async e=>{
   else if(a==='cluemore'){ live.clueStep=Math.min(4,(+live.clueStep||0)+1); saveLive(); }
   else if(a==='clueall'){ live.clueStep=4; saveLive(); }
   else if(a==='cluehide'){ live.clueStep=0; saveLive(); }
-  else if(['savetg','showtg','showchart','showexam','showadmit'].includes(a)){ const v=k=>{ const el=document.getElementById(k); return el?el.value:''; }; R.tg=Object.assign({},R.tg||{},{head:v('tgHead'),sub:v('tgSub'),rank:v('tgRank'),social:v('tgSoc'),ticker:v('tgTick'),chart:v('tgChart'),exam:v('tgExam'),chartHl:v('tgHl'),updatedAt:Date.now()}); lsR(); if(bc) bc.postMessage({tg:R.tg});
+  else if(['savetg','showtg','showchart','showexam','showadmit','showadmit2'].includes(a)){ const v=k=>{ const el=document.getElementById(k); return el?el.value:''; }; R.tg=Object.assign({},R.tg||{},{head:v('tgHead'),sub:v('tgSub'),rank:v('tgRank'),social:v('tgSoc'),ticker:v('tgTick'),chart:v('tgChart'),exam:v('tgExam'),chartHl:v('tgHl'),admitMsg:v('tgAdm'),updatedAt:Date.now()}); lsR(); if(bc) bc.postMessage({tg:R.tg});
     if(R.db){ try{ await R.db.doc('stato/tg').set(clone(R.tg)); }catch(e){ toast('TG non salvato'); } }
     if(a==='savetg'){ toast('Salvato'); refresh(); }
-    else { const m={showtg:'tg',showchart:'classifica',showexam:'esame',showadmit:'ammessi'}[a]; if(a==='showadmit'&&live.music.sting!==false) live.trans={at:Date.now(),kind:'char',title:''}; live.mode=m; saveLive(); } }
+    else { const m={showtg:'tg',showchart:'classifica',showexam:'esame',showadmit:'ammessi',showadmit2:'ammessi'}[a]; if(a==='showadmit'||a==='showadmit2'){ live.admitStage=a==='showadmit'?'lettera':'classe'; live.admitAt=Date.now(); } if(a==='showadmit'&&live.music.sting!==false) live.trans={at:Date.now(),kind:'char',title:''}; live.mode=m; saveLive(); } }
   else if(a==='burst'){ const c=store.chars.find(x=>x.id===R.bPg); const txt=(document.getElementById('bText').value.trim()||document.getElementById('bMove').value||'').trim(); if(!txt){ toast('Scrivi il nome del colpo'); return; }
     live.burst={text:txt.toUpperCase(),sub:c?(c.name||c.hero):'',img:c?portraitOf(c):'',color:(c&&c.color)||'#e1262f',sfx:document.getElementById('bSfx').value||'',at:Date.now()}; logF((c?(c.name||'').split(' ')[0]+': ':'')+txt.toUpperCase()+'!'); saveLive(); toast('Colpo lanciato'); }
   else if(a==='sfx'){ live.sfx={id,at:Date.now()}; saveLive(); }
@@ -3093,8 +3140,7 @@ function renderTV(){
     const ep=R.eps.find(x=>x.id===live.epId)||{};
     const paras=t=>String(t||'').split('\n').filter(x=>x.trim()).map(x=>`<p>${esc(x)}</p>`).join('');
     if(live.mode==='episodio') h=`<div class="tv-ep"><div class="tv-burst" aria-hidden="true"></div><p class="k">Episodio ${esc(String(ep.num??''))}</p><h1>${esc(ep.title||'')}</h1></div>`;
-    else if(live.mode==='recap') h=`<div class="tv-recap"><p class="k">Nella puntata precedente…</p><div class="txt">${paras(ep.recap)}</div></div>`;
-    else h=`<div class="tv-recap next"><p class="k">Nel prossimo episodio…</p><div class="txt">${paras(ep.next)}</div><p class="pu">Plus Ultra!</p></div>`;
+    else h=tvRecap(ep,live.mode==='anteprima');
   } else if(live.mode==='indizio'){
     const x=R.clues.find(c=>c.id===live.clueId)||{}; const step=+live.clueStep||0; const img=srcOf(x.img);
     const lines=String(x.text||'').split('\n').filter(l=>l.trim()); const k=Math.ceil(lines.length*step/4);
@@ -3182,8 +3228,30 @@ function tvChart(){
     <div class="ch-pod">${top.map((r,i)=>{ const pc=r.w&&/^#[0-9a-f]{6}$/i.test(r.w.color||'')?r.w.color:['#ffe100','#c9d1e6','#d08a4a'][i];
       return `<div class="ch-top${r.w&&r.w.src?'':' nomini'}" style="--pc:${pc};--d:${(2.6-i*.6).toFixed(2)}s">${r.w&&r.w.src?miniHtml(r.w,r.hero):''}<div><b>${esc(r.hero)}</b>${r.real?`<small>${esc(r.real)}</small>`:''}${r.tr?`<em class="${trCls(r.tr)}">${esc(r.tr)}</em>`:''}</div><span class="rk">${esc(r.pos)}</span></div>`; }).join('')}</div>
     <ol class="ch-list" style="--rows:${Math.max(rows,8)};--cols:${cols};--rh:${rh}">${rest.map((r,i)=>{ const pc=r.w&&/^#[0-9a-f]{6}$/i.test(r.w.color||'')?r.w.color:'#3a4a80'; const on=hl&&r.hero.toLowerCase()===String(hl).toLowerCase();
-      return `<li class="${on?'hl':''}${r.w&&r.w.src?'':' nomini'}" style="--pc:${pc};--d:${(.4+i*.06).toFixed(2)}s"><span class="pos">${esc(r.pos)}</span>${r.w&&r.w.src?miniHtml(r.w,r.hero):''}<span class="nm">${esc(r.hero)}${r.real?`<small>${esc(r.real)}</small>`:''}</span><span class="trd ${trCls(r.tr)}">${esc(r.tr)}</span></li>`; }).join('')}</ol></div>`;
+      return `<li class="${on?'hl':''} nomini" style="--pc:${pc};--d:${(.4+i*.06).toFixed(2)}s"><span class="pos">${esc(r.pos)}</span><span class="nm">${esc(r.hero)}${r.real?`<small>${esc(r.real)}</small>`:''}</span><span class="trd ${trCls(r.tr)}">${esc(r.tr)}</span></li>`; }).join('')}</ol></div>`;
 }
+function hlNames(txt){
+  const W=[]; store.chars.forEach(c=>{ const f=String(c.name||'').split(/\s+/)[0]; if(f.length>2) W.push([f,c.color]); });
+  R.pngs.forEach(p=>{ if(folderOf(p)==='Idee per il futuro') return; const al=(String(p.name||'').match(/\((.*?)\)/)||[])[1]; [p.hero,al].forEach(x=>{ if(x&&String(x).length>2) W.push([String(x),'']); }); if(p.folder==='Classe 1-A'||p.kind==='nemico'){ const f=String(p.name||'').split(/\s+/)[0]; if(f.length>3&&!/^Robot$/i.test(f)) W.push([f,'']); } });
+  W.push(['Zero',''],['Deku',''],['U.A.','']);
+  let h=esc(txt); const seen=new Set();
+  W.sort((a,b)=>b[0].length-a[0].length).forEach(([w,c])=>{ const k=w.toLowerCase(); if(seen.has(k)) return; seen.add(k); const re=new RegExp('(^|[^\\wÀ-ÿ>])('+esc(w).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')(?![\\wÀ-ÿ])','g'); h=h.replace(re,(m,a,b)=>a+'<em'+(c&&/^#[0-9a-f]{6}$/i.test(c)&&!/^#0{6}$/.test(c)?` style="--pc:${c}"`:'')+'>'+b+'</em>'); });
+  return h;
+}
+function tvRecap(ep,next){
+  const L=lnOf(next?ep.next:ep.recap); if(!L.length) return `<div class="tv-title"><p class="k">${next?'Anteprima':'Riassunto'} vuoto: scrivilo in Regia</p></div>`;
+  let t=.9; const S=L.map(l=>{ const d=t, dur=1.6+l.length*.06; t+=dur; return {d,dur}; });
+  return `<div class="tv-rc${next?' next':''}"><p class="rc-k">${next?'Nel prossimo episodio…':'Nella puntata precedente…'}</p>${ep.title?`<p class="rc-ep">Ep. ${esc(String(ep.num??''))} · ${esc(ep.title)}</p>`:''}
+    ${L.map((l,i)=>`<p class="rc-l${i===L.length-1?' last':''}" style="--d:${S[i].d.toFixed(2)}s;--o:${(S[i].d+S[i].dur-.4).toFixed(2)}s">${hlNames(l)}</p>`).join('')}
+    <div class="rc-bar">${S.map(x=>`<i style="--d:${x.d.toFixed(2)}s;--t:${x.dur.toFixed(2)}s"></i>`).join('')}</div>
+    ${next?`<p class="rc-pu" style="--d:${(t-.6).toFixed(2)}s">Plus Ultra!</p>`:''}</div>`;
+}
+const ADMIT_MSG=`Congratulazioni!
+Sono Izuku Midoriya, il preside della U.A.
+Ho guardato la vostra prova. I punti contano, ma conta di più chi siete stati quando lo Zero si è alzato.
+Siete tra gli ultimi ad avere un Quirk: non vi rende speciali, vi rende responsabili.
+Per questo sono felice di dirvelo: siete stati ammessi alla Classe 1-A.
+Benvenuti alla U.A. Da oggi, questa è la vostra Hero Academia!`;
 function tvAdmit(){
   const ex=examRows();
   let L=store.chars.map(c=>({name:c.name||'PG',w:whoOf(c.name)}));
@@ -3191,11 +3259,28 @@ function tvAdmit(){
   L.forEach(x=>{ const r=ex.find(e=>whoOf(e.name)&&x.w&&whoOf(e.name).id===x.w.id)||ex.find(e=>e.name.toLowerCase()===x.name.toLowerCase()); x.pts=r?r.pts:null; x.order=r?r.pos:999; });
   L.sort((a,b)=>a.order-b.order);
   const n=L.length, per=n<=6?n:Math.ceil(n/2), cw=`min(${n<=6?15:11}vw, calc(${n<=6?60:30}vh), calc(88vw / ${per} - 1.6vw))`;
-  const step=n>8?.32:.5, df=(1.6+n*step+.7).toFixed(2);
-  return `<div class="tv-adm"><div class="adm-crest"><b>U.A.</b></div><p class="adm-k">Esito dell'esame d'ammissione</p>
+  const step=n>8?.32:.5;
+  // lettera
+  const letter=live.admitStage!=='classe';
+  const lines=lnOf((R.tg||{}).admitMsg||ADMIT_MSG);
+  const names=store.chars.map(c=>String(c.name||'').split(/\s+/)[0]).filter(Boolean);
+  const dear=names.length?'Cari '+(names.length>1?names.slice(0,-1).join(', ')+' e '+names[names.length-1]:names[0])+',':'';
+  let t=3.6; const lt=lines.map(l=>{ const d=t; t+=.7+l.length*.055; return d; }); const sig=t; const T=letter?t+2.6:0;
+  const deku=whoOf('Deku');
+  const off=x=>(T+x).toFixed(2)+'s';
+  const df=off(1.6+n*step+.7);
+  const letHtml=letter?`<div class="adm-stage" style="--T:${T.toFixed(2)}s">
+      <div class="adm-env"><div class="env-back"></div><div class="env-front"></div><div class="env-flap"></div><div class="env-seal">U.A.</div></div>
+      <div class="adm-lw"><div class="adm-paper">
+        <div class="pap-head"><b>U.A.</b><span>雄英高校 · Ufficio del Preside</span>${deku&&deku.src?`<span class="pap-deku">${miniHtml(deku,'D')}</span>`:''}</div>
+        ${dear?`<p class="pap-dear" style="--d:3.2s">${esc(dear)}</p>`:''}
+        ${lines.map((l,i)=>`<p class="pap-l${i===0?' big':''}" style="--d:${lt[i].toFixed(2)}s">${esc(l)}</p>`).join('')}
+        <p class="pap-sig" style="--d:${sig.toFixed(2)}s">— Deku<small>Izuku Midoriya, preside</small></p>
+      </div></div></div>`:'';
+  return `<div class="tv-adm" data-at="${live.admitAt||0}">${letHtml}<div class="adm-crest" style="animation-delay:${off(0)}"><b>U.A.</b></div><p class="adm-k" style="animation-delay:${off(.6)}">Esito dell'esame d'ammissione</p>
     <div class="adm-cards" style="--cw:${cw}">${L.map((x,i)=>{ const pc=x.w&&/^#[0-9a-f]{6}$/i.test(x.w.color||'')?x.w.color:'#2a9d8f';
-      return `<div class="adm-card" style="--pc:${pc};--d:${(1.6+i*step).toFixed(2)}s">${miniHtml(x.w,x.name)}<span class="adm-stamp">AMMESSO</span><p>${esc(x.name.split(/\s+/)[0].toUpperCase())}${x.pts!=null?`<small>${esc(String(x.pts))} punti</small>`:''}</p></div>`; }).join('')}</div>
-    <div class="adm-final" style="--df:${df}s"><b>CLASSE 1-A</b><span>Benvenuti alla U.A. · Plus Ultra!</span></div></div>`;
+      return `<div class="adm-card" style="--pc:${pc};--d:${off(1.6+i*step)}">${miniHtml(x.w,x.name)}<span class="adm-stamp">AMMESSO</span><p>${esc(x.name.split(/\s+/)[0].toUpperCase())}${x.pts!=null?`<small>${esc(String(x.pts))} punti</small>`:''}</p></div>`; }).join('')}</div>
+    <div class="adm-final" style="--df:${df}"><b>CLASSE 1-A</b><span>Benvenuti alla U.A. · Plus Ultra!</span></div></div>`;
 }
 
 function tvProfile(o){
