@@ -2704,6 +2704,7 @@ function editorHtml(){
       <label>Colore<input id="eColor" type="color" value="${esc(o.color||'#5b6478')}"></label>
       <label>Nome giapponese<input id="eJp" value="${esc(o.jpName||'')}" placeholder="名前"></label>
       <label>Lettura in kana<input id="eJpR" value="${esc(o.jpReading||'')}"></label>
+      <label>Nome da eroe in katakana<input id="eJpH" value="${esc(o.jpHero||'')}" placeholder="es. デク"></label>
       <label>Compleanno<input id="eBirth" value="${esc(o.birthday||'')}"></label>
       <label>Altezza<input id="eHeight" value="${esc(o.height||'')}"></label>
       <label class="w2">Gli piace<input id="eLikes" value="${esc(o.likes||'')}"></label>
@@ -2796,7 +2797,7 @@ function readEditor(){
   if(edit.col==='episodi'){ o.num=+v('eNum')||0; o.title=v('eTitle'); o.recap=v('eRecap'); o.next=v('eNext'); return; }
   if(edit.col==='indizi'){ o.title=v('eTitle'); o.text=v('eText'); o.style=v('eStyle'); return; }
   if(edit.col==='scene'){ o.title=v('eTitle'); o.sub=v('eSub'); o.track=v('eTrack'); o.fightTrack=v('eFight'); o.order=+v('eOrder')||0; }
-  else { o.hero=v('eHero'); o.folder=v('eFolder').trim(); o.jpName=v('eJp'); o.jpReading=v('eJpR'); o.birthday=v('eBirth'); o.height=v('eHeight'); o.likes=v('eLikes');
+  else { o.hero=v('eHero'); o.folder=v('eFolder').trim(); o.jpName=v('eJp'); o.jpReading=v('eJpR'); o.jpHero=v('eJpH'); o.birthday=v('eBirth'); o.height=v('eHeight'); o.likes=v('eLikes');
     (o.looks||[]).forEach((l,i)=>{ const el=document.getElementById('eLook'+i); if(el) l.label=el.value; });
     const dr=document.querySelector('input[name="eLookDef"]:checked'); if(dr) o.look=dr.value;
     o.name=v('eName')||'Senza nome'; o.kind=v('eKind'); o.quirk=v('eQuirk'); o.color=v('eColor'); o.rank=Math.max(1,+v('eRank')||1); o.ab={}; ABK.forEach(k=>o.ab[k]=+v('eAb'+k)||0); o.hpMax=+v('eHp')||0; o.fcMax=+v('eFc')||0; o.dr=+v('eDr')||0; o.mb={M:+v('eMbM')||0}; o.desc=v('eDesc'); o.pub=v('ePub'); }
@@ -2995,14 +2996,14 @@ function tvPg(c,look){
   if(!c) return '';
   const m=IMG[c.id]||{}; const full=(look&&m[look])||m.hero||m.uniform||m.casual||'';
   const others=['hero','uniform','casual'].map(k=>m[k]).filter(v=>v&&v!==full);
-  return tvProfile({name:c.name,hero:c.hero,color:c.color,full,others,face:m.face||'',faceCss:cropCss(cropOf(c,'face')),jpName:c.jpName,jpReading:c.jpReading,
+  return tvProfile({name:c.name,hero:c.hero,color:c.color,full,others,face:m.face||'',faceCss:cropCss(cropOf(c,'face')),jpName:c.jpName,jpReading:c.jpReading,jpHero:c.jpHero,
     tag:'Classe '+(c.classe||'1-A'),cv:['Giocatore',c.player],rows:[['Compleanno',c.birthday],['Altezza',c.height],['Quirk',c.quirk],['Gli piace',c.likes]],blurb:c.blurb});
 }
 function tvPng(p,lid){
   if(!p) return '';
   const lk=lookOf(p,lid), f=folderOf(p);
   const others=looksOf(p).filter(l=>l.img&&(!lk||l.id!==lk.id)).map(l=>srcOf(l.img));
-  return tvProfile({name:p.name,hero:p.hero,color:p.color||'#5b6478',full:lk?srcOf(lk.img):'',others,face:srcOf(p.face),faceCss:cropCss(cropOf(p,'face')),jpName:p.jpName,jpReading:p.jpReading,
+  return tvProfile({name:p.name,hero:p.hero,color:p.color||'#5b6478',full:lk?srcOf(lk.img):'',others,face:srcOf(p.face),faceCss:cropCss(cropOf(p,'face')),jpName:p.jpName,jpReading:p.jpReading,jpHero:p.jpHero,
     tag:f!==NOFOLD?f:({nemico:'Villain',alleato:'Alleato',png:''}[p.kind]||''),foe:p.kind==='nemico',
     rows:[['Quirk',p.quirk],['Compleanno',p.birthday],['Altezza',p.height],['Gli piace',p.likes]],blurb:p.pub});
 }
