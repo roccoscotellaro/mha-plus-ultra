@@ -674,7 +674,14 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tvp-stage::before{content:"";position:absolute;left:-22%;top:-10%;bottom:-10%;width:42%;background:#f4f5fb;transform:skewX(-14deg);opacity:.95}
 .tvp-stage::after{content:"";position:absolute;left:14%;top:-10%;bottom:-10%;width:2.2%;background:#f4f5fb;transform:skewX(-14deg);opacity:.55}
 .tvp-wm{position:absolute;right:.5vw;top:1vh;bottom:1vh;writing-mode:vertical-rl;font-family:var(--f-display);font-size:10vw;line-height:1;letter-spacing:.04em;color:rgba(255,255,255,.22);white-space:nowrap;overflow:hidden;z-index:1}
-.tvp-stage img{position:absolute;z-index:2;left:6%;width:80%;top:3vh;height:calc(100% - 3vh);object-fit:contain;object-position:center bottom;filter:drop-shadow(.7vw .7vw 0 rgba(7,9,15,.55))}
+.tvp-figs{position:absolute;z-index:2;left:3%;right:8%;top:3vh;bottom:0;display:flex;align-items:flex-end;justify-content:center}
+.tvp-figs img{display:block;height:100%;width:auto;min-width:0;flex:0 1 auto;object-fit:contain;object-position:center bottom;filter:drop-shadow(.7vw .7vw 0 rgba(7,9,15,.55))}
+.tvp-figs img.alt{height:84%;margin-left:-2.5%}
+.tvp-figs[data-n="2"] img{max-width:56%}.tvp-figs[data-n="3"] img{max-width:40%}.tvp-figs[data-n="4"] img{max-width:31%}
+.tvp.multi{grid-template-columns:minmax(0,57fr) minmax(0,43fr)}
+.tvp.multi .tvp-wm{font-size:8vw}
+.tvp.multi .tvp-kanji{font-size:4.3vw}.tvp.multi .tvp-kanji.lat{font-size:4.2vw}.tvp.multi .tvp-romaji{font-size:1.75vw}.tvp.multi .tvp-rows div{grid-template-columns:9.5vw minmax(0,1fr)}.tvp.multi .tvp-rows dt,.tvp.multi .tvp-rows dd{font-size:1.4vw}.tvp.multi .tvp-blurb{font-size:1.3vw}
+.tvp-blurb{max-height:calc(1.45em * 2 + 2.2vh)}
 .tvp-noimg{position:absolute;z-index:2;inset:12vh 18% 8vh 22%;display:grid;place-items:center;font-family:var(--f-display);font-size:14vw;color:rgba(255,255,255,.55);text-shadow:.5vw .5vw 0 rgba(7,9,15,.4)}
 .tvp-info{grid-row:1;grid-column:2;display:flex;flex-direction:column;justify-content:safe center;gap:1vh;padding:2.2vh 4vw 1.6vh 1.5vw;min-width:0;min-height:0;overflow:hidden;position:relative;z-index:3}
 .tvp-info>*{flex:none}
@@ -693,7 +700,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tvp-rows dd{margin:0;font-size:1.5vw;font-weight:700;color:#fff;text-shadow:.15vw .15vw 0 #07090f;overflow-wrap:anywhere}
 .tvp-blurb{margin:.4vh 0 0;font-size:1.45vw;line-height:1.45;background:#f4f5fb;color:#07090f;border:.25vw solid #07090f;padding:1vh 1.1vw;box-shadow:.4vw .4vw 0 #07090f;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tvp-big{grid-row:2;grid-column:1/-1;position:relative;z-index:4;background:#f4f5fb;border-top:.45vw solid #07090f;font-family:var(--f-display);font-size:5.6vw;line-height:.95;letter-spacing:.03em;color:#c3cad9;white-space:nowrap;overflow:hidden;padding:.6vh 2vw .2vh}
-@media (prefers-reduced-motion:no-preference){.tvp-stage img{animation:tvpIn .6s ease-out}.tvp-info{animation:tvpIn2 .6s ease-out}
+@media (prefers-reduced-motion:no-preference){.tvp-figs img{animation:tvpIn .6s ease-out both}.tvp-figs img.alt{animation-delay:.12s}.tvp-info{animation:tvpIn2 .6s ease-out}
   @keyframes tvpIn{from{transform:translateX(-6vw);opacity:0}to{transform:none;opacity:1}}@keyframes tvpIn2{from{transform:translateX(5vw);opacity:0}to{transform:none;opacity:1}}}
 @media (max-width:760px){.tvp{grid-template-columns:1fr;grid-template-rows:48% minmax(0,1fr) auto}.tvp-info{grid-row:2;grid-column:1;padding:12px 16px}.tvp-stage{grid-row:1}
   .tvp-rows dt,.tvp-rows dd,.tvp-blurb{font-size:14px}.tvp-rows div{grid-template-columns:96px minmax(0,1fr)}.tvp-face{display:none}.tvp-big{grid-row:3}}
@@ -2862,8 +2869,9 @@ function renderTV(){
 function tvProfile(o){
   const nm=(o.name||'Senza nome').toUpperCase(), hero=(o.hero||'').toUpperCase();
   const rows=o.rows.filter(r=>r[1]);
-  return `<div class="tvp" style="--pc:${esc(/^#[0-9a-f]{6}$/i.test(o.color||'')?o.color:'#2a9d8f')}">
-    <div class="tvp-stage"><div class="tvp-wm" aria-hidden="true">${esc(nm)}</div>${o.full?`<img src="${esc(o.full)}" alt="">`:`<div class="tvp-noimg" aria-hidden="true">${esc(nm[0]||'?')}</div>`}</div>
+  const figs=[o.full,...(o.others||[])].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).slice(0,4);
+  return `<div class="tvp${figs.length>1?' multi':''}" style="--pc:${esc(/^#[0-9a-f]{6}$/i.test(o.color||'')?o.color:'#2a9d8f')}">
+    <div class="tvp-stage"><div class="tvp-wm" aria-hidden="true">${esc(nm)}</div>${figs.length?`<div class="tvp-figs" data-n="${figs.length}">${figs.map((f,i)=>`<img class="${i?'alt':''}" src="${esc(f)}" alt="">`).join('')}</div>`:`<div class="tvp-noimg" aria-hidden="true">${esc(nm[0]||'?')}</div>`}</div>
     <div class="tvp-info">
       ${o.tag?`<div class="tvp-tag${o.foe?' foe':''}">${esc(o.tag)}</div>`:''}
       ${o.face?`<div class="tvp-face"><img src="${esc(o.face)}" alt="" style="${o.faceCss||''}"></div>`:''}
@@ -2879,13 +2887,15 @@ const PG_LOOKS={uniform:'Uniforme',hero:'Eroe',casual:'Casual'};
 function tvPg(c,look){
   if(!c) return '';
   const m=IMG[c.id]||{}; const full=(look&&m[look])||m.hero||m.uniform||m.casual||'';
-  return tvProfile({name:c.name,hero:c.hero,color:c.color,full,face:m.face||'',faceCss:cropCss(cropOf(c,'face')),jpName:c.jpName,jpReading:c.jpReading,
+  const others=['hero','uniform','casual'].map(k=>m[k]).filter(v=>v&&v!==full);
+  return tvProfile({name:c.name,hero:c.hero,color:c.color,full,others,face:m.face||'',faceCss:cropCss(cropOf(c,'face')),jpName:c.jpName,jpReading:c.jpReading,
     tag:'Classe '+(c.classe||'1-A'),rows:[['Giocatore',c.player],['Compleanno',c.birthday],['Altezza',c.height],['Quirk',c.quirk],['Gli piace',c.likes]],blurb:c.blurb});
 }
 function tvPng(p,lid){
   if(!p) return '';
   const lk=lookOf(p,lid), f=folderOf(p);
-  return tvProfile({name:p.name,hero:p.hero,color:p.color||'#5b6478',full:lk?srcOf(lk.img):'',face:srcOf(p.face),faceCss:cropCss(cropOf(p,'face')),jpName:p.jpName,jpReading:p.jpReading,
+  const others=looksOf(p).filter(l=>l.img&&(!lk||l.id!==lk.id)).map(l=>srcOf(l.img));
+  return tvProfile({name:p.name,hero:p.hero,color:p.color||'#5b6478',full:lk?srcOf(lk.img):'',others,face:srcOf(p.face),faceCss:cropCss(cropOf(p,'face')),jpName:p.jpName,jpReading:p.jpReading,
     tag:f!==NOFOLD?f:({nemico:'Villain',alleato:'Alleato',png:''}[p.kind]||''),foe:p.kind==='nemico',
     rows:[['Quirk',p.quirk],['Compleanno',p.birthday],['Altezza',p.height],['Gli piace',p.likes]],blurb:p.pub});
 }
