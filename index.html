@@ -751,7 +751,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tvo-figs img.alt{height:86%;margin-left:-3%}
 .tvo-figs[data-n="2"] img{max-width:56%}.tvo-figs[data-n="3"] img{max-width:40%}.tvo-figs[data-n="4"] img{max-width:31%}
 .tvo-noimg{position:absolute;z-index:4;right:10%;top:15%;bottom:10%;width:26%;display:grid;place-items:center;font-size:calc(var(--u) * 18);color:#dcdcdc}
-@media (prefers-reduced-motion:no-preference){.tvo-figs img{animation:tvpIn .55s ease-out both}.tvo-figs img.alt{animation-delay:.1s}.tvo-face{animation:tvoFace .5s ease-out both}.tvo-text{animation:tvpIn2 .55s ease-out both}
+@media (prefers-reduced-motion:no-preference){
   @keyframes tvoFace{from{transform:translateX(-12vw)}to{transform:none}}}
 @media (max-width:760px){.tvo-figs{width:46%}.tvo-text{width:56%}.tvo-rows div,.tvo-cv{font-size:15px}.tvo-blurb{display:none}}
 
@@ -807,6 +807,20 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tvo-rows div{font-size:calc(var(--u) * 1.95)}
 .tvo-cv{font-size:calc(var(--u) * 2.15)}
 .tvo-figs img{height:100%}
+
+/* entrata del personaggio: prima la figura intera al centro che si avvicina lentamente, poi scritte e primo piano */
+@media (prefers-reduced-motion:no-preference){
+  .tvo .tvo-figs{transform-origin:50% 75%;animation:tvoZoom 3.2s cubic-bezier(.33,0,.2,1) both}
+  .tvo-face{animation:tvoFaceIn .55s cubic-bezier(.2,.8,.2,1) 2.3s both}
+  .tvo-text>*{animation:tvoUp .5s cubic-bezier(.2,.8,.2,1) both}
+  .tvo-text>*:nth-child(1){animation-delay:2.45s}.tvo-text>*:nth-child(2){animation-delay:2.6s}.tvo-text>*:nth-child(3){animation-delay:2.78s}
+  .tvo-wm{animation:tvoFade .8s ease-out 2.6s both}
+  @keyframes tvoZoom{0%{transform:translateX(-24vw) scale(1.32);opacity:0}10%{opacity:1}62%{transform:translateX(-24vw) scale(1.12);opacity:1}100%{transform:none;opacity:1}}
+  @keyframes tvoFaceIn{from{transform:translateX(-60%);opacity:0}to{transform:none;opacity:1}}
+  @keyframes tvoUp{from{transform:translateX(-4vw);opacity:0}to{transform:none;opacity:1}}
+  @keyframes tvoFade{from{opacity:0}to{opacity:1}}
+}
+.tv-mainw{position:absolute;inset:0}
 /* ===== Stacco di scena (eyecatch) ===== */
 .tv-eye{position:fixed;inset:0;z-index:22;pointer-events:none;overflow:hidden;display:grid;place-items:center}
 .tv-eye .ey-bg{position:absolute;inset:-10%;background:#f7f7f7;background-image:conic-gradient(#e3e3e3 25%,transparent 0 50%,#e3e3e3 0 75%,transparent 0);background-size:1.5vw 1.5vw;transform:translateX(-120%) skewX(-12deg)}
@@ -1063,7 +1077,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 20:00</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 19/10 · 20:15</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2675,7 +2689,7 @@ function stingFor(t,id,look){
   const same=live.mode==='personaggio'&&live.show&&live.show.t===t&&live.show.id===id;
   if(same) return; // cambiare solo l'aspetto dello stesso personaggio non fa partire lo stacco
   const o=t==='pg'?store.chars.find(c=>c.id===id):pngOf(id);
-  live.trans={at:Date.now(),title:(o&&(o.hero||o.name))||''};
+  live.trans={at:Date.now(),kind:'char',title:(o&&(o.hero||o.name))||''};
 }
 function pngRowHtml(p){
   const th=pngThumb(p), L=looksOf(p).filter(l=>l.img), sh=live.show&&live.show.t==='png'&&live.show.id===p.id&&live.mode==='personaggio';
@@ -2995,9 +3009,10 @@ function renderTV(){
   } else {
     h=`<div class="tv-title"><p class="k">In attesa del master</p></div>`;
   }
-  const shown=(live.counters||[]).filter(c=>c.show);
-  if(shown.length) h+=`<div class="tv-counters${live.mode==='fight'?' f':''}">${shown.map(c=>`<div class="tv-cnt${cZero(c)?' zero':''}"><span>${esc(c.label||'')}</span><b>${cDisp(c)}${c.type==='round'?'<small> round</small>':''}</b></div>`).join('')}</div>`;
-  box.innerHTML=h;
+  const shown=(live.counters||[]).filter(c=>c.show); let hc='';
+  if(shown.length) hc=`<div class="tv-counters${live.mode==='fight'?' f':''}">${shown.map(c=>`<div class="tv-cnt${cZero(c)?' zero':''}"><span>${esc(c.label||'')}</span><b>${cDisp(c)}${c.type==='round'?'<small> round</small>':''}</b></div>`).join('')}</div>`;
+  if(box._main!==h||!box.querySelector('#tvCntBox')){ box._main=h; box.innerHTML=`<div class="tv-mainw">${h}</div><div id="tvCntBox">${hc}</div>`; }
+  else { const cb=box.querySelector('#tvCntBox'); if(cb.innerHTML!==hc) cb.innerHTML=hc; }
   playMusic();
 }
 function tvProfile(o){
@@ -3102,10 +3117,10 @@ function checkFx(){
   } }
   const tr=live.trans;
   if(tr&&tr.at&&tr.at!==lastTrans){ lastTrans=tr.at; if(Date.now()-tr.at<8000){
-    const el=$('#tvEye'); el.innerHTML=`<div class="ey-bg"></div><div class="ey-band"></div><div class="ey-txt"><b>${esc(tr.title||'')}</b><span>PLUS ULTRA</span></div>`;
-    el.hidden=false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+    const el=$('#tvEye'); const showEye=tr.kind!=='char'; if(showEye){ el.innerHTML=`<div class="ey-bg"></div><div class="ey-band"></div><div class="ey-txt"><b>${esc(tr.title||'')}</b><span>PLUS ULTRA</span></div>`;
+    el.hidden=false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
     const chosen=live.music.stingId&&localTracks.find(x=>x.id===live.music.stingId); const st=chosen?[chosen]:localTracks.filter(x=>x.cat==='stacco'); if(st.length){ const pick=st[Math.floor(Math.random()*st.length)]; const m=PL[pi], v=+live.music.vol||.8; if(curTrack&&!m.paused){ fade(m,v*.15,250); setTimeout(()=>fade(m,v,900),2600); } sfxPlay(pick.id,v); }
-    clearTimeout(eyeTimer); eyeTimer=setTimeout(()=>{ el.classList.remove('on'); el.hidden=true; },2700);
+    if(showEye){ clearTimeout(eyeTimer); eyeTimer=setTimeout(()=>{ el.classList.remove('on'); el.hidden=true; },2700); }
   } }
   const s=live.sfx;
   if(s&&s.at&&s.at!==lastSfx){ lastSfx=s.at; if(Date.now()-s.at<10000) sfxPlay(s.id,live.music.vol); }
