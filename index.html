@@ -1237,7 +1237,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 20/10 · 18:00</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 20/10 · 19:30</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -1249,8 +1249,9 @@ body.tvmode{overflow:hidden;background:#07090f}
   <div class="tv-start" id="tvStart"><div><h2>Schermo del tavolo</h2><p>Premi per avviare la musica e il pieno schermo. Poi comanda tutto dalla Regia, dal telefono o dal tablet.</p><button class="btn primary" id="tvStartBtn">Avvia lo schermo</button><p class="hint"><a href="#">Torna alle schede</a></p></div></div>
   <button class="tv-mbtn" id="tvMusicBtn" aria-label="Brani su questo dispositivo">♪</button>
   <div class="tv-panel" id="tvPanel" hidden>
-    <h3>Brani su questo dispositivo</h3>
-    <p class="hint">I file restano su questo PC. Segna come "Fight" i brani da combattimento (partono da soli quando avvii un fight), come "Effetto" i suoni brevi (sirene, esplosioni, impatti) e come "Stacco di scena" la sigletta che suona quando cambi scena.</p>
+    <h3>Brani</h3>
+    <p class="hint" id="tvCloudSt"></p>
+    <p class="hint">☁ = online, li senti da qualsiasi PC in cui entri come master. 💾 = solo su questo PC. Segna come "Fight" i brani da combattimento (partono da soli quando avvii un fight), come "Effetto" i suoni brevi (sirene, esplosioni, impatti) e come "Stacco di scena" la sigletta che suona quando cambi scena.</p>
     <ul id="tvTracks"></ul>
     <button class="btn sm primary" id="tvAdd">Aggiungi mp3</button><input type="file" id="tvFiles" accept="audio/*,.mp3,.m4a,.ogg,.wav" multiple hidden>
   </div>
@@ -1822,6 +1823,17 @@ async function uploadBlob(blob,folder){
 }
 const assets={ upload:async(blob,opt)=>{ const j=await uploadBlob(blob,'a'); return {id:j.id,url:assetUrl(j.path)}; } };
 window.mhaImg={ url:assetUrl, upload:uploadBlob };
+
+/* ---------- musica privata del master: bucket "musica" tramite Edge Function ---------- */
+async function musicCall(action,extra){
+  const fd=new FormData(); fd.append('action',action); fd.append('pin',getPin());
+  Object.entries(extra||{}).forEach(([k,v])=>{ if(v instanceof Blob) fd.append(k,v,v.name||'brano'); else fd.append(k,String(v)); });
+  const res=await fetch(SB_URL+'/functions/v1/musica',{method:'POST',headers:{Authorization:'Bearer '+SB_KEY,apikey:SB_KEY},body:fd});
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok) throw err(res.status===403?'permission_denied':'unavailable',j.error||'Errore');
+  return j;
+}
+window.mhaMusic={ hasPin:()=>!!getPin(), list:()=>musicCall('list'), upload:(file,name,cat)=>musicCall('upload',{file,name,cat}), update:(id,cat)=>musicCall('update',{id,cat}), remove:id=>musicCall('delete',{id}) };
 
 /* ---------- download con link normali ---------- */
 const downloads={ save:async({filename,data})=>{
@@ -3403,8 +3415,16 @@ function idb(){ return new Promise((ok,ko)=>{ if(IDB.db) return ok(IDB.db); cons
 async function idbAll(){ try{ const d=await idb(); return await new Promise(ok=>{ const q=d.transaction('brani').objectStore('brani').getAll(); q.onsuccess=()=>ok(q.result||[]); q.onerror=()=>ok([]); }); }catch(e){ return []; } }
 async function idbPut(o){ const d=await idb(); return new Promise((ok,ko)=>{ const t=d.transaction('brani','readwrite'); t.objectStore('brani').put(o); t.oncomplete=ok; t.onerror=()=>ko(t.error); }); }
 async function idbDel(id){ const d=await idb(); return new Promise(ok=>{ const t=d.transaction('brani','readwrite'); t.objectStore('brani').delete(id); t.oncomplete=ok; t.onerror=ok; }); }
-let localTracks=[];
-async function loadLocalTracks(){ localTracks=await idbAll(); renderTrackPanel(); }
+let localTracks=[], idbTracks=[], cloudTracks=[], cloudErr='';
+const MM=()=>window.mhaMusic&&window.mhaMusic.hasPin()?window.mhaMusic:null;
+async function loadLocalTracks(){
+  idbTracks=await idbAll();
+  if(MM()){ try{ const j=await MM().list(); cloudTracks=(j.tracks||[]).map(t=>Object.assign({},t,{cloud:true})); cloudErr=''; }catch(e){ cloudErr=e.message||'errore'; } } else cloudErr='nopin';
+  localTracks=[...cloudTracks,...idbTracks]; renderTrackPanel();
+}
+setInterval(()=>{ if(cloudTracks.length) loadLocalTracks(); },6*3600*1000); // i link firmati durano 12 ore
+function trackUrl(t){ if(!t) return ''; if(t.cloud) return t.url||''; urls[t.id]=urls[t.id]||URL.createObjectURL(t.blob); return urls[t.id]; }
+const fileFile=t=>new File([t.blob],(t.name||'brano')+'.'+(((t.blob.type||'').split('/')[1]||'mp3').replace('mpeg','mp3').replace('x-m4a','m4a').replace('mp4','m4a')),{type:t.blob.type||'audio/mpeg'});
 async function publishTracks(){
   const list=localTracks.map(t=>({id:t.id,name:t.name,cat:t.cat}));
   R.tracks=list; if(bc) bc.postMessage({tracks:list});
@@ -3412,7 +3432,8 @@ async function publishTracks(){
 }
 function renderTrackPanel(){
   const el=$('#tvTracks'); if(!el) return;
-  el.innerHTML=localTracks.length?localTracks.map(t=>`<li><span>${esc(t.name)}</span><select data-tcat="${esc(t.id)}" aria-label="Tipo di ${esc(t.name)}">${MOODS.map(([c,l])=>opt(c,l,t.cat)).join('')}${opt('sfx','Effetto',t.cat)}${opt('stacco','Stacco di scena',t.cat)}${opt('sigla','Sigla del riassunto',t.cat)}</select><button class="btn sm ghost" data-tdel="${esc(t.id)}">Togli</button></li>`).join(''):'<li class="hint">Nessun brano su questo dispositivo.</li>';
+  const st=$('#tvCloudSt'); if(st) st.innerHTML=cloudErr==='nopin'?'<b>Non sei entrato come master su questo PC:</b> i brani nuovi restano solo qui. Entra con il PIN per vederli e caricarli online.':cloudErr?'Archivio online non raggiungibile ('+esc(cloudErr)+'): uso solo i brani di questo PC.':`☁ ${cloudTracks.length} brani online, disponibili su ogni PC in cui entri come master.${idbTracks.length?` · ${idbTracks.length} solo su questo PC <button class="btn sm" data-tup="1">Porta online</button>`:''}`;
+  el.innerHTML=localTracks.length?localTracks.map(t=>`<li><span>${t.cloud?'☁ ':'💾 '}${esc(t.name)}</span><select data-tcat="${esc(t.id)}" aria-label="Tipo di ${esc(t.name)}">${MOODS.map(([c,l])=>opt(c,l,t.cat)).join('')}${opt('sfx','Effetto',t.cat)}${opt('stacco','Stacco di scena',t.cat)}${opt('sigla','Sigla del riassunto',t.cat)}</select><button class="btn sm ghost" data-tdel="${esc(t.id)}">Togli</button></li>`).join(''):'<li class="hint">Nessun brano ancora.</li>';
 }
 const PL=[new Audio(),new Audio()]; PL.forEach(a=>{a.loop=true;a.preload='auto'; a.addEventListener('ended',()=>{ if(a!==PL[pi]||live.music.loop!==false) return; const t=nextTrackId(1); if(!t||t===curTrack){ a.currentTime=0; a.play().catch(()=>{}); return; } if(R.owner||R.local){ live.music.track=t; saveLive(); } }); });
 let pi=0, curTrack='', urls={};
@@ -3427,19 +3448,25 @@ async function playMusic(){
   const old=PL[pi]; fade(old,0,1500,()=>old.pause());
   curTrack=want; if(!want) return;
   const t=localTracks.find(x=>x.id===want); if(!t){ toast('Il brano non è su questo dispositivo'); return; }
-  pi=1-pi; const a=PL[pi]; urls[want]=urls[want]||URL.createObjectURL(t.blob); a.src=urls[want]; a.volume=0;
+  pi=1-pi; const a=PL[pi]; a.src=trackUrl(t); a.volume=0;
   try{ await a.play(); fade(a,vol,1500); }catch(e){ $('#tvStart').hidden=false; }
 }
 function initTV(){
-  $('#tvStartBtn').onclick=async()=>{ started=true; lastBurst=live.burst&&live.burst.at; lastSfx=live.sfx&&live.sfx.at; lastTrans=live.trans&&live.trans.at; lastSigla=live.siglaAt; $('#tvStart').hidden=true; try{ await document.documentElement.requestFullscreen(); }catch(e){} curTrack='__'; playMusic(); };
-  $('#tvMusicBtn').onclick=()=>{ const p=$('#tvPanel'); p.hidden=!p.hidden; };
+  $('#tvStartBtn').onclick=async()=>{ started=true; lastBurst=live.burst&&live.burst.at; lastSfx=live.sfx&&live.sfx.at; lastTrans=live.trans&&live.trans.at; lastSigla=live.siglaAt; $('#tvStart').hidden=true; loadLocalTracks().then(()=>{ publishTracks(); curTrack='__'; playMusic(); }); try{ await document.documentElement.requestFullscreen(); }catch(e){} curTrack='__'; playMusic(); };
+  $('#tvMusicBtn').onclick=()=>{ const p=$('#tvPanel'); p.hidden=!p.hidden; if(!p.hidden) loadLocalTracks(); };
   $('#tvAdd').onclick=()=>$('#tvFiles').click();
   $('#tvFiles').onchange=async e=>{ const fs=Array.from(e.target.files||[]); e.target.value='';
     for(const f of fs){ if(!/^audio\//.test(f.type)&&!/\.(mp3|m4a|ogg|wav|aac|flac)$/i.test(f.name)) continue; const tag=(/^\[([^\]]+)\]/.exec(f.name)||[])[1]||''; const tl=tag.toLowerCase(); const mc=(MOODS.find(m=>m[1].toLowerCase()===tl||m[0]===tl)||[])[0]||({effetto:'sfx',stacco:'stacco',sigla:'sigla'})[tl];
-      await idbPut({id:rid(),name:f.name.replace(/\.[^.]+$/,'').replace(/^\[[^\]]+\]\s*(\d+\s+)?/,''),cat:mc||(/fight|battle|boss|combat|lotta/i.test(f.name)?'fight':'scena'),blob:f}); }
+      const nm=f.name.replace(/\.[^.]+$/,'').replace(/^\[[^\]]+\]\s*(\d+\s+)?/,''), cat=mc||(/fight|battle|boss|combat|lotta/i.test(f.name)?'fight':'scena');
+      if(MM()){ toast('Carico online: '+nm); try{ await MM().upload(f,nm,cat); continue; }catch(err){ toast('Online non riuscito ('+(err.message||'errore')+'): lo tengo su questo PC'); } }
+      await idbPut({id:rid(),name:nm,cat,blob:f}); }
     await loadLocalTracks(); publishTracks(); toast('Brani aggiunti'); };
-  $('#tvPanel').addEventListener('change',async e=>{ const id=e.target.dataset.tcat; if(!id) return; const t=localTracks.find(x=>x.id===id); if(t){ t.cat=e.target.value; try{ await idbPut(t); toast('Salvato: '+t.name+' → '+((moodLbl(t.cat)||{sfx:'Effetto',stacco:'Stacco di scena',sigla:'Sigla del riassunto'}[t.cat]||t.cat))); }catch(err){ toast('Non riesco a salvare il brano su questo dispositivo'); } publishTracks(); } });
-  $('#tvPanel').addEventListener('click',async e=>{ const b=e.target.closest('[data-tdel]'); if(!b) return; await idbDel(b.dataset.tdel); await loadLocalTracks(); publishTracks(); });
+  $('#tvPanel').addEventListener('change',async e=>{ const id=e.target.dataset.tcat; if(!id) return; const t=localTracks.find(x=>x.id===id); if(t){ t.cat=e.target.value; try{ if(t.cloud) await MM().update(t.id,t.cat); else await idbPut(t); toast('Salvato: '+t.name+' → '+((moodLbl(t.cat)||{sfx:'Effetto',stacco:'Stacco di scena',sigla:'Sigla del riassunto'}[t.cat]||t.cat))); }catch(err){ toast('Non riesco a salvare il brano su questo dispositivo'); } publishTracks(); } });
+  $('#tvPanel').addEventListener('click',async e=>{
+    if(e.target.closest('[data-tup]')){ const L=idbTracks.slice(); let ok=0; for(const t of L){ toast(`Porto online ${ok+1}/${L.length}: ${t.name}`); try{ await MM().upload(fileFile(t),t.name,t.cat); await idbDel(t.id); ok++; }catch(err){ toast('Non riuscito: '+t.name+' ('+(err.message||'errore')+')'); break; } } await loadLocalTracks(); publishTracks(); toast(ok+' brani ora sono online'); return; }
+    const b=e.target.closest('[data-tdel]'); if(!b) return; const t=localTracks.find(x=>x.id===b.dataset.tdel); if(!t) return;
+    if(t.cloud){ if(b.dataset.sure!=='1'){ b.dataset.sure='1'; b.textContent='Sicuro? Lo togli da tutti i PC'; return; } try{ await MM().remove(t.id); }catch(err){ toast('Non riesco a toglierlo: '+(err.message||'errore')); return; } } else await idbDel(t.id);
+    await loadLocalTracks(); publishTracks(); });
   loadLocalTracks().then(()=>{ if(localTracks.length) publishTracks(); });
 }
 
@@ -3448,7 +3475,7 @@ setInterval(()=>{ $$('.cdown').forEach(el=>{ const c=(live.counters||[]).find(x=
 /* effetti sulla TV: colpo speciale e suoni */
 let lastBurst=null, lastSfx=null, fxTimer=0, lastTrans=null, eyeTimer=0, siglaA=null, lastSigla=null;
 function stopSigla(quick){ const a=siglaA; siglaA=null; if(a) fade(a,0,quick?150:1400,()=>a.pause()); if(!quick) playMusic(); }
-function sfxPlay(id,vol){ const t=localTracks.find(x=>x.id===id); if(!t) return; urls[id]=urls[id]||URL.createObjectURL(t.blob); const a=new Audio(urls[id]); a.volume=Math.min(1,(vol||.8)+.1); a.play().catch(()=>{}); }
+function sfxPlay(id,vol){ const t=localTracks.find(x=>x.id===id); if(!t) return; const a=new Audio(trackUrl(t)); a.volume=Math.min(1,(vol||.8)+.1); a.play().catch(()=>{}); }
 function checkFx(){
   if(R.view!=='schermo'||!started) return;
   const b=live.burst;
@@ -3469,7 +3496,7 @@ function checkFx(){
   } }
   const sg=live.siglaAt;
   if(sg&&sg!==lastSigla){ lastSigla=sg; if(Date.now()-sg<15000&&live.mode==='recap'){ const t=(live.music.siglaId&&localTracks.find(x=>x.id===live.music.siglaId))||localTracks.find(x=>x.cat==='sigla');
-    if(t){ stopSigla(true); urls[t.id]=urls[t.id]||URL.createObjectURL(t.blob); const a=new Audio(urls[t.id]); a.volume=Math.min(1,+live.music.vol||.8); siglaA=a; a.onended=()=>{ if(siglaA===a){ siglaA=null; playMusic(); } }; a.play().catch(()=>{}); if(curTrack) fade(PL[pi],0,500); } } }
+    if(t){ stopSigla(true); const a=new Audio(trackUrl(t)); a.volume=Math.min(1,+live.music.vol||.8); siglaA=a; a.onended=()=>{ if(siglaA===a){ siglaA=null; playMusic(); } }; a.play().catch(()=>{}); if(curTrack) fade(PL[pi],0,500); } } }
   if(siglaA&&live.mode!=='recap') stopSigla();
   const s=live.sfx;
   if(s&&s.at&&s.at!==lastSfx){ lastSfx=s.at; if(Date.now()-s.at<10000) sfxPlay(s.id,live.music.vol); }
