@@ -2605,7 +2605,7 @@ const DEF_LIVE=()=>({mode:'nero',sceneId:'',show:null,fight:null,music:{track:''
 let live=DEF_LIVE();
 const $$=s=>Array.from(document.querySelectorAll(s));
 const isAsset=v=>/^[0-9a-f]{32}$/.test(v||'');
-const srcOf=v=>!v?'':isAsset(v)?(window.mhaImg?mhaImg.url('a/'+v):''):(/^data:image\//.test(v)?v:'');
+const srcOf=v=>!v?'':isAsset(v)?(window.mhaImg?mhaImg.url('a/'+v):''):(/^data:image\//.test(v)||/^img\/[\w.-]+$/.test(v)?v:'');
 const rid=()=>'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const clone=o=>JSON.parse(JSON.stringify(o));
 const d6=()=>1+Math.floor(Math.random()*6);
