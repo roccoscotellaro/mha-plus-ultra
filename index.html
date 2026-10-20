@@ -1237,7 +1237,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 20/10 · 00:15</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 20/10 · 18:00</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2741,7 +2741,11 @@ function toggleCond(key,cond){
 function logF(t){ live.sessionLog=(live.sessionLog||[]).concat([t]).slice(-60); if(!live.fight) return; live.fight.log=[{t,at:Date.now()}].concat(live.fight.log||[]).slice(0,14); }
 
 /* ---------- musica (comandi dalla regia) ---------- */
-function trackFor(kind){ const sc=R.scenes.find(s=>s.id===live.sceneId); if(kind==='fight') return (sc&&sc.fightTrack)||((R.tracks.find(t=>t.cat==='fight')||{}).id)||''; return (sc&&sc.track)||''; }
+const MOODS=[['eroico','Eroico'],['fight','Battaglia'],['villain','Villain'],['tensione','Tensione'],['triste','Triste'],['emozione','Emozione'],['quotidiano','Quotidiano'],['comico','Comico'],['scena','Scena']];
+const moodLbl=c=>(MOODS.find(m=>m[0]===c)||[0,''])[1];
+function moodPick(cat){ const pool=R.tracks.filter(t=>t.cat===cat); if(!pool.length) return ''; const others=pool.filter(t=>t.id!==live.music.track); const L=others.length?others:pool; return L[Math.floor(Math.random()*L.length)].id; }
+function resolveTrack(v){ return /^mood:/.test(v||'')?moodPick(v.slice(5)):(v||''); }
+function trackFor(kind){ const sc=R.scenes.find(s=>s.id===live.sceneId); if(kind==='fight') return resolveTrack(sc&&sc.fightTrack)||moodPick('fight'); return resolveTrack(sc&&sc.track); }
 function autoMusic(kind){ if(!live.music.auto) return; const t=trackFor(kind); if(t){ live.music.track=t; live.music.playing=true; } }
 
 function nextTrackId(dir){ const cur=R.tracks.find(t=>t.id===live.music.track); const pool=cur?R.tracks.filter(t=>t.cat===cur.cat):R.tracks.filter(t=>!/^(sfx|stacco|sigla)$/.test(t.cat)); if(!pool.length) return ''; const i=cur?pool.findIndex(t=>t.id===cur.id):-1; return pool[((i+dir)%pool.length+pool.length)%pool.length].id; }
@@ -2780,12 +2784,13 @@ function renderRegia(){
   // musica
   const tr=R.tracks;
   h+=`<section class="rg-box"><div class="rg-h"><h3>Musica</h3><span class="hint" style="margin:0">I brani si caricano dallo Schermo, sul dispositivo collegato alla TV.</span></div>
-    <div class="rg-row">${tr.length?`<select id="rgTrack" aria-label="Brano">${opt('','— Nessun brano —',live.music.track)}${tr.filter(t=>!/^(sfx|stacco|sigla)$/.test(t.cat)).map(t=>opt(t.id,(t.cat==='fight'?'⚔ ':'')+t.name,live.music.track)).join('')}</select>
+    <div class="rg-row">${tr.length?`<select id="rgTrack" aria-label="Brano">${opt('','— Nessun brano —',live.music.track)}${MOODS.map(([c,l])=>{ const L=tr.filter(t=>t.cat===c); return L.length?`<optgroup label="${esc(l)}">${L.map(t=>opt(t.id,t.name,live.music.track)).join('')}</optgroup>`:''; }).join('')}</select>
     <button class="btn sm" data-rg="tprev" aria-label="Brano precedente">⏮</button><button class="btn sm${live.music.playing?' primary':''}" data-rg="play">${live.music.playing?'Pausa':'Play'}</button><button class="btn sm" data-rg="tnext" aria-label="Brano successivo">⏭</button>
+    <div class="rg-moods" style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span class="hint" style="margin:0">Atmosfera:</span>${MOODS.filter(([c])=>tr.some(t=>t.cat===c)).map(([c,l])=>{ const cur=(tr.find(t=>t.id===live.music.track)||{}).cat===c&&live.music.playing; return `<button class="btn sm${cur?' primary':''}" data-rg="mood" data-v="${c}">${esc(l)} <small>${tr.filter(t=>t.cat===c).length}</small></button>`; }).join('')||'<span class="hint" style="margin:0">segna i brani per atmosfera dallo Schermo</span>'}</div>
     <label class="rg-chk"><input type="checkbox" id="rgLoop"${live.music.loop!==false?' checked':''}> Ripeti il brano</label><label class="rg-chk"><input type="checkbox" id="rgSting"${live.music.sting!==false?' checked':''}> Stacco al cambio di scena o personaggio</label><label class="rg-vol">Stacco <select id="rgStingT" aria-label="Brano dello stacco di scena">${opt('','— il brano segnato come Stacco —',live.music.stingId||'')}${tr.map(t=>opt(t.id,(t.cat==='stacco'?'✦ ':'')+t.name,live.music.stingId||'')).join('')}</select></label><button class="btn sm" data-rg="teststing">Prova stacco</button>
     <label class="rg-vol">Sigla del riassunto <select id="rgSigla" aria-label="Sigla del riassunto">${opt('','— il brano segnato come Sigla —',live.music.siglaId||'')}${tr.map(t=>opt(t.id,(t.cat==='sigla'?'♪ ':'')+t.name,live.music.siglaId||'')).join('')}</select></label>
     <label class="rg-vol">Volume <input type="range" id="rgVol" min="0" max="1" step="0.05" value="${live.music.vol}"></label>
-    <label class="rg-chk"><input type="checkbox" id="rgAuto"${live.music.auto?' checked':''}> Cambia da sola con scene e fight</label><span class="hint" style="margin:0;flex-basis:100%">Senza "Ripeti", a fine brano parte il successivo dello stesso tipo (scena o fight).</span>`:'<p class="hint" style="margin:0">Nessun brano ancora: apri la sezione Schermo sul PC della TV e carica gli mp3 da lì.</p>'}</div></section>`;
+    <label class="rg-chk"><input type="checkbox" id="rgAuto"${live.music.auto?' checked':''}> Cambia da sola con scene e fight</label><span class="hint" style="margin:0;flex-basis:100%">Senza "Ripeti", a fine brano parte il successivo della stessa atmosfera. I pulsanti Atmosfera tolgono "Ripeti" da soli.</span>`:'<p class="hint" style="margin:0">Nessun brano ancora: apri la sezione Schermo sul PC della TV e carica gli mp3 da lì.</p>'}</div></section>`;
   // contatori
   const cs=live.counters||[];
   h+=`<section class="rg-box"><div class="rg-h"><h3>Contatori</h3><span class="hint" style="margin:0">In round scendono da soli a ogni nuovo round del fight.</span></div>
@@ -2902,8 +2907,8 @@ function editorHtml(){
     <div class="rg-form">
       <label>Titolo<input id="eTitle" value="${esc(o.title||'')}" placeholder="Prova pratica: la città simulata"></label>
       <label>Sottotitolo<input id="eSub" value="${esc(o.sub||'')}" placeholder="Dieci minuti, sei isolati, i robot valgono punti"></label>
-      <label>Brano della scena<select id="eTrack">${opt('','— nessuno —',o.track)}${R.tracks.filter(t=>!/^(sfx|stacco|sigla)$/.test(t.cat)).map(t=>opt(t.id,t.name,o.track)).join('')}</select></label>
-      <label>Brano del fight<select id="eFight">${opt('','— il primo brano da fight —',o.fightTrack)}${R.tracks.filter(t=>!/^(sfx|stacco|sigla)$/.test(t.cat)).map(t=>opt(t.id,t.name,o.fightTrack)).join('')}</select></label>
+      <label>Brano della scena<select id="eTrack">${opt('','— nessuno —',o.track)}<optgroup label="Un brano a caso dell'atmosfera">${MOODS.map(([c,l])=>opt('mood:'+c,'♫ '+l,o.track)).join('')}</optgroup><optgroup label="Brano preciso">${R.tracks.filter(t=>!/^(sfx|stacco|sigla)$/.test(t.cat)).map(t=>opt(t.id,t.name,o.track)).join('')}</optgroup></select></label>
+      <label>Brano del fight<select id="eFight">${opt('','— un brano a caso di Battaglia —',o.fightTrack)}${MOODS.map(([c,l])=>opt('mood:'+c,'♫ '+l,o.fightTrack)).join('')}${R.tracks.filter(t=>!/^(sfx|stacco|sigla)$/.test(t.cat)).map(t=>opt(t.id,t.name,o.fightTrack)).join('')}</select></label>
       <label>Ordine<input id="eOrder" type="number" value="${+o.order||0}"></label>
       <div class="rg-img"><div class="rg-thumb" style="${srcOf(o.img)?`background-image:url('${srcOf(o.img)}')`:''}"><span>${srcOf(o.img)?'':'Nessuna immagine'}</span></div><button class="btn sm" data-rg="eimg">Carica immagine</button></div>
     </div>
@@ -3054,6 +3059,7 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-rg]'); if(!b||!b.closest('#viewRegia')) return;
   const a=b.dataset.rg, id=b.dataset.id;
   if(a==='mode'){ live.mode=b.dataset.v; if(live.mode==='scena') autoMusic('scena'); saveLive(); }
+  else if(a==='mood'){ const t=moodPick(b.dataset.v); if(!t) return; live.music.track=t; live.music.playing=true; live.music.loop=false; live.music.restart=Date.now(); saveLive(); }
   else if(a==='play'){ live.music.playing=!live.music.playing; saveLive(); }
   else if(a==='newep'){ edit={col:'episodi',obj:{id:rid(),_new:true,num:(R.eps.reduce((m,x)=>Math.max(m,+x.num||0),0)+1)}}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
   else if(a==='editep'){ edit={col:'episodi',obj:clone(R.eps.find(x=>x.id===id))}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
@@ -3406,7 +3412,7 @@ async function publishTracks(){
 }
 function renderTrackPanel(){
   const el=$('#tvTracks'); if(!el) return;
-  el.innerHTML=localTracks.length?localTracks.map(t=>`<li><span>${esc(t.name)}</span><select data-tcat="${esc(t.id)}" aria-label="Tipo di ${esc(t.name)}">${opt('scena','Scena',t.cat)}${opt('fight','Fight',t.cat)}${opt('sfx','Effetto',t.cat)}${opt('stacco','Stacco di scena',t.cat)}${opt('sigla','Sigla del riassunto',t.cat)}</select><button class="btn sm ghost" data-tdel="${esc(t.id)}">Togli</button></li>`).join(''):'<li class="hint">Nessun brano su questo dispositivo.</li>';
+  el.innerHTML=localTracks.length?localTracks.map(t=>`<li><span>${esc(t.name)}</span><select data-tcat="${esc(t.id)}" aria-label="Tipo di ${esc(t.name)}">${MOODS.map(([c,l])=>opt(c,l,t.cat)).join('')}${opt('sfx','Effetto',t.cat)}${opt('stacco','Stacco di scena',t.cat)}${opt('sigla','Sigla del riassunto',t.cat)}</select><button class="btn sm ghost" data-tdel="${esc(t.id)}">Togli</button></li>`).join(''):'<li class="hint">Nessun brano su questo dispositivo.</li>';
 }
 const PL=[new Audio(),new Audio()]; PL.forEach(a=>{a.loop=true;a.preload='auto'; a.addEventListener('ended',()=>{ if(a!==PL[pi]||live.music.loop!==false) return; const t=nextTrackId(1); if(!t||t===curTrack){ a.currentTime=0; a.play().catch(()=>{}); return; } if(R.owner||R.local){ live.music.track=t; saveLive(); } }); });
 let pi=0, curTrack='', urls={};
@@ -3429,9 +3435,10 @@ function initTV(){
   $('#tvMusicBtn').onclick=()=>{ const p=$('#tvPanel'); p.hidden=!p.hidden; };
   $('#tvAdd').onclick=()=>$('#tvFiles').click();
   $('#tvFiles').onchange=async e=>{ const fs=Array.from(e.target.files||[]); e.target.value='';
-    for(const f of fs){ if(!/^audio\//.test(f.type)&&!/\.(mp3|m4a|ogg|wav|aac|flac)$/i.test(f.name)) continue; await idbPut({id:rid(),name:f.name.replace(/\.[^.]+$/,''),cat:/fight|battle|boss|combat|lotta/i.test(f.name)?'fight':'scena',blob:f}); }
+    for(const f of fs){ if(!/^audio\//.test(f.type)&&!/\.(mp3|m4a|ogg|wav|aac|flac)$/i.test(f.name)) continue; const tag=(/^\[([^\]]+)\]/.exec(f.name)||[])[1]||''; const tl=tag.toLowerCase(); const mc=(MOODS.find(m=>m[1].toLowerCase()===tl||m[0]===tl)||[])[0]||({effetto:'sfx',stacco:'stacco',sigla:'sigla'})[tl];
+      await idbPut({id:rid(),name:f.name.replace(/\.[^.]+$/,'').replace(/^\[[^\]]+\]\s*(\d+\s+)?/,''),cat:mc||(/fight|battle|boss|combat|lotta/i.test(f.name)?'fight':'scena'),blob:f}); }
     await loadLocalTracks(); publishTracks(); toast('Brani aggiunti'); };
-  $('#tvPanel').addEventListener('change',async e=>{ const id=e.target.dataset.tcat; if(!id) return; const t=localTracks.find(x=>x.id===id); if(t){ t.cat=e.target.value; try{ await idbPut(t); toast('Salvato: '+t.name+' → '+({scena:'Scena',fight:'Fight',sfx:'Effetto',stacco:'Stacco di scena',sigla:'Sigla del riassunto'}[t.cat]||t.cat)); }catch(err){ toast('Non riesco a salvare il brano su questo dispositivo'); } publishTracks(); } });
+  $('#tvPanel').addEventListener('change',async e=>{ const id=e.target.dataset.tcat; if(!id) return; const t=localTracks.find(x=>x.id===id); if(t){ t.cat=e.target.value; try{ await idbPut(t); toast('Salvato: '+t.name+' → '+((moodLbl(t.cat)||{sfx:'Effetto',stacco:'Stacco di scena',sigla:'Sigla del riassunto'}[t.cat]||t.cat))); }catch(err){ toast('Non riesco a salvare il brano su questo dispositivo'); } publishTracks(); } });
   $('#tvPanel').addEventListener('click',async e=>{ const b=e.target.closest('[data-tdel]'); if(!b) return; await idbDel(b.dataset.tdel); await loadLocalTracks(); publishTracks(); });
   loadLocalTracks().then(()=>{ if(localTracks.length) publishTracks(); });
 }
