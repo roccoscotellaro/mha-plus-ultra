@@ -608,6 +608,25 @@ body.tvmode{overflow:hidden;background:#07090f}
 .tv-recap .txt p{margin:0 0 1.6vh;font-size:2.4vw;line-height:1.4;color:#e6e8f2}
 .tv-recap.next{background:radial-gradient(circle at 50% 120%,#1b2a6b 0,#07090f 60%)}
 .tv-recap .pu{margin:2vh 0 0;font-family:var(--f-display);font-size:8vw;line-height:1;color:var(--tvy);text-shadow:.5vw .5vw 0 var(--tvr);transform:rotate(-3deg);width:fit-content}
+.tv-phone{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle,#2a2216 0,#07090f 75%)}
+.ph-t{position:absolute;left:4vw;top:5vh;margin:0;z-index:3;font-family:var(--f-display);font-weight:400;font-size:3.4vw;color:var(--tvy);background:#07090f;padding:.4vh 1.4vw;transform:skewX(-8deg);box-shadow:.5vw .5vw 0 var(--tvr);transition:opacity .5s}
+.tv-phone.zoom .ph-t{opacity:0}
+.ph-box{position:relative;transform-origin:50% 50%}
+.tv-phone.zoom .ph-box{transform:var(--tf)}
+.tv-phone.zin .ph-box{animation:phZoom 1.4s cubic-bezier(.6,0,.2,1) both}
+@keyframes phZoom{from{transform:none}}
+.ph-box img{display:block;width:100%;height:100%}
+.ph-lcd{position:absolute;box-sizing:border-box;padding:.35em .5em;background:rgba(174,196,136,.9);color:#16210f;font-family:"JetBrains Mono",monospace;font-weight:700;line-height:1.15;overflow:hidden;display:flex;flex-direction:column;box-shadow:inset 0 0 .6em rgba(0,0,0,.35);border-radius:.15em}
+.ph-bar{display:flex;justify-content:space-between;border-bottom:.08em solid #16210f;padding-bottom:.1em;margin-bottom:.2em;font-size:.8em}
+.ph-msgs{flex:1;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;min-height:0}
+.ph-msgs p{margin:0 0 .35em;flex:none}
+.ph-msgs p.new{animation:phType .9s steps(18) .9s both}
+.tv-phone:not(.zin) .ph-msgs p.new{animation-delay:.1s}
+@keyframes phType{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.ph-cur{display:block;width:.55em;height:.9em;background:#16210f;animation:phBlink 1s steps(1) infinite}
+@keyframes phBlink{50%{opacity:0}}
+.ph-new{flex:1;display:flex;align-items:center;justify-content:center;gap:.4em;font-size:1.3em;text-align:center;animation:phBlink 1.2s steps(1) infinite}
+.ph-new b{font-size:2em}
 .tv-clue{position:absolute;inset:0;display:grid;place-items:center;padding:5vh 5vw;background:radial-gradient(circle,#2a2216 0,#07090f 75%)}
 .tv-clue .paper{width:min(62vw,1100px);max-height:90vh;overflow:hidden;background:#f3ecdc;color:#1d1a14;padding:4vh 3vw;box-shadow:1vw 1vw 0 rgba(0,0,0,.5);transform:rotate(-1deg)}
 .tv-clue h2{margin:0 0 2vh;font-family:var(--f-display);font-weight:400;font-size:3.6vw;letter-spacing:.03em}
@@ -3159,6 +3178,7 @@ function renderTV(){
   } else if(live.mode==='indizio'){
     const x=R.clues.find(c=>c.id===live.clueId)||{}; const step=+live.clueStep||0; const img=srcOf(x.img);
     const lines=String(x.text||'').split('\n').filter(l=>l.trim()); const k=Math.ceil(lines.length*step/4);
+    if(img&&x.screen) h=tvPhone(x,img,lines,k,step); else
     h=`<div class="tv-clue ${esc(x.style||'foglio')}"><div class="paper"><h2>${esc(x.title||'')}</h2>
       ${img?`<div class="cimg"><img src="${esc(img)}" alt=""><div class="cover" style="height:${100-step*25}%"><span>?</span></div></div>`:''}
       <div class="ctext">${lines.map((l,i)=>`<p class="${i<k?'':'hid'}">${i<k?esc(l):'█████ ███ ██████'}</p>`).join('')}</div></div></div>`;
@@ -3251,6 +3271,19 @@ function fitFigs(root){
     Promise.all(ims.map(i=>i.decode?i.decode().catch(()=>{}):null)).then(()=>{ const sum=ims.reduce((a,i)=>a+(i.naturalWidth&&i.naturalHeight?i.naturalWidth/i.naturalHeight:.4),0); if(!sum) return;
       const W=c.clientWidth||innerWidth*.42, H=c.clientHeight||innerHeight*.74, gap=-innerWidth*.02*(ims.length-1);
       c.style.setProperty('--fh',Math.min(H,(W-gap)/sum)+'px'); }); });
+}
+// indizio con telefono: i messaggi compaiono sullo schermo dell'immagine
+function tvPhone(x,img,lines,k,step){
+  const sc=x.screen, H=92, ar=x.ar||0.909; // altezza del telefono in vh, larghezza/altezza dell'immagine
+  const cx=(+sc.x+ +sc.w/2)/100, cy=(+sc.y+ +sc.h/2)/100, S=Math.min(58/(sc.h/100*H), 80*16/9/(sc.w/100*H*ar));
+  const zoom=step>0, tf=`translate(${((.5-cx)*H*ar*S).toFixed(2)}vh,${((.5-cy)*H*S).toFixed(2)}vh) scale(${S.toFixed(2)})`;
+  const fs=(sc.h/100*H/10).toFixed(3);
+  const msgs=lines.slice(0,k).map((l,i)=>`<p class="${i===k-1?'new':''}">${esc(l)}</p>`).join('');
+  return `<div class="tv-phone${zoom?' zoom':''}${step===1?' zin':''}" style="--tf:${tf}"><h2 class="ph-t">${esc(x.title||'')}</h2>
+    <div class="ph-box" style="height:${H}vh;aspect-ratio:${ar}"><img src="${esc(img)}" alt="">
+      <div class="ph-lcd" style="left:${sc.x}%;top:${sc.y}%;width:${sc.w}%;height:${sc.h}%;font-size:${fs}vh">
+        ${zoom?`<div class="ph-bar"><span>✉ ${esc(x.sender||'Sconosciuto')}</span><span>${k}/${lines.length}</span></div><div class="ph-msgs">${msgs}<i class="ph-cur"></i></div>`:`<div class="ph-new"><b>✉</b><span>1 nuovo<br>messaggio</span></div>`}
+      </div></div></div>`;
 }
 function recapEnts(){
   const E=[]; const okc=c=>/^#[0-9a-f]{6}$/i.test(c||'')&&!/^#0{6}$/.test(c)?c:'';
