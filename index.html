@@ -1240,7 +1240,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 26/10 · 09:40</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 26/10 · 09:50</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -3287,8 +3287,9 @@ function tvChart(){
       return `<li class="${on?'hl':''} nomini" style="--pc:${pc};--d:${(.4+i*.06).toFixed(2)}s"><span class="pos">${esc(r.pos)}</span><span class="nm">${esc(r.hero)}${r.real?`<small>${esc(r.real)}</small>`:''}</span><span class="trd ${trCls(r.tr)}">${esc(r.tr)}</span></li>`; }).join('')}</ol></div>`;
 }
 // logo animato sul cartellino: parte quando sono usciti tutti i titoli
+const LOGO_DUR=3.2, LOGO_AT=2450; let logoRate=2.1; // durata del video del logo (s) e quando parte (ms)
 function startLogo(root){ const v=root.querySelector('.tvo-logo video'); if(!v) return; try{ v.pause(); v.currentTime=0; }catch(e){}
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; if(reduce) return; setTimeout(()=>{ if(v.isConnected){ v.playbackRate=2.1; v.play().catch(()=>{}); } },2450); }
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; if(reduce) return; setTimeout(()=>{ if(v.isConnected){ v.playbackRate=logoRate; v.play().catch(()=>{}); } },2450); }
 // stessa altezza per tutti; se non ci stanno in larghezza, si rimpiccioliscono tutti insieme
 function fitFigs(root){
   root.querySelectorAll('.rc-figs').forEach(c=>{ const ims=[...c.querySelectorAll('img')];
@@ -3499,7 +3500,13 @@ function checkFx(){
     const el=$('#tvEye'); const showEye=!/^char/.test(tr.kind||''); if(showEye){ el.innerHTML=`<div class="ey-bg"></div><div class="ey-band"></div><div class="ey-txt"><b>${esc(tr.title||'')}</b><span>PLUS ULTRA</span></div>`;
     el.hidden=false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
     const chosen=live.music.stingId&&localTracks.find(x=>x.id===live.music.stingId); const st=chosen?[chosen]:localTracks.filter(x=>x.cat==='stacco'); if(st.length){ const pick=st[Math.floor(Math.random()*st.length)]; const go=()=>{ const m=PL[pi], v=+live.music.vol||.8; if(curTrack&&!m.paused){ fade(m,v*.15,250); setTimeout(()=>fade(m,v,900),2600); } sfxPlay(pick.id,v); };
-      if(tr.kind==='char') setTimeout(go,2450); else go(); }
+      if(tr.kind!=='char') go();
+      else { // personaggio: lo stacco finisce nello stesso istante in cui il logo finisce di comporsi
+        const a=new Audio(trackUrl(pick)); a.preload='auto'; const t0=Date.now(); let done=false;
+        const plan=()=>{ if(done) return; done=true; const D=isFinite(a.duration)&&a.duration>0?a.duration:1.5;
+          logoRate=Math.min(3.2,Math.max(1,LOGO_DUR/D)); const L=LOGO_DUR/logoRate; const startAt=Math.max(0,LOGO_AT+Math.round((L-D)*1000));
+          setTimeout(()=>{ const m=PL[pi], v=+live.music.vol||.8; if(curTrack&&!m.paused){ fade(m,v*.15,250); setTimeout(()=>fade(m,v,900),Math.round(D*1000)+300); } a.volume=Math.min(1,v+.1); a.play().catch(()=>{}); },Math.max(0,startAt-(Date.now()-t0))); };
+        a.addEventListener('loadedmetadata',plan); setTimeout(plan,1500); a.load(); } }
     if(showEye){ clearTimeout(eyeTimer); eyeTimer=setTimeout(()=>{ el.classList.remove('on'); el.hidden=true; },2700); }
   } }
   const sg=live.siglaAt;
