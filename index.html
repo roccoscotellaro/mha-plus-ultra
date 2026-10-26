@@ -1240,7 +1240,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 26/10 · 09:20</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 26/10 · 09:40</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -3089,7 +3089,7 @@ document.addEventListener('click',async e=>{
   else if(['savetg','showtg','showchart','showexam','showadmit','showadmit2'].includes(a)){ const v=k=>{ const el=document.getElementById(k); return el?el.value:''; }; R.tg=Object.assign({},R.tg||{},{head:v('tgHead'),sub:v('tgSub'),rank:v('tgRank'),social:v('tgSoc'),ticker:v('tgTick'),chart:v('tgChart'),exam:v('tgExam'),chartHl:v('tgHl'),admitMsg:v('tgAdm'),updatedAt:Date.now()}); lsR(); if(bc) bc.postMessage({tg:R.tg});
     if(R.db){ try{ await R.db.doc('stato/tg').set(clone(R.tg)); }catch(e){ toast('TG non salvato'); } }
     if(a==='savetg'){ toast('Salvato'); refresh(); }
-    else { const m={showtg:'tg',showchart:'classifica',showexam:'esame',showadmit:'ammessi',showadmit2:'ammessi'}[a]; if(a==='showadmit'||a==='showadmit2'){ live.admitStage=a==='showadmit'?'lettera':'classe'; live.admitAt=Date.now(); } if(a==='showadmit'&&live.music.sting!==false) live.trans={at:Date.now(),kind:'char',title:''}; live.mode=m; saveLive(); } }
+    else { const m={showtg:'tg',showchart:'classifica',showexam:'esame',showadmit:'ammessi',showadmit2:'ammessi'}[a]; if(a==='showadmit'||a==='showadmit2'){ live.admitStage=a==='showadmit'?'lettera':'classe'; live.admitAt=Date.now(); } if(a==='showadmit'&&live.music.sting!==false) live.trans={at:Date.now(),kind:'char0',title:''}; live.mode=m; saveLive(); } }
   else if(a==='burst'){ const c=store.chars.find(x=>x.id===R.bPg); const txt=(document.getElementById('bText').value.trim()||document.getElementById('bMove').value||'').trim(); if(!txt){ toast('Scrivi il nome del colpo'); return; }
     live.burst={text:txt.toUpperCase(),sub:c?(c.name||c.hero):'',img:c?portraitOf(c):'',color:(c&&c.color)||'#e1262f',sfx:document.getElementById('bSfx').value||'',at:Date.now()}; logF((c?(c.name||'').split(' ')[0]+': ':'')+txt.toUpperCase()+'!'); saveLive(); toast('Colpo lanciato'); }
   else if(a==='sfx'){ live.sfx={id,at:Date.now()}; saveLive(); }
@@ -3288,7 +3288,7 @@ function tvChart(){
 }
 // logo animato sul cartellino: parte quando sono usciti tutti i titoli
 function startLogo(root){ const v=root.querySelector('.tvo-logo video'); if(!v) return; try{ v.pause(); v.currentTime=0; }catch(e){}
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; if(reduce) return; setTimeout(()=>{ if(v.isConnected){ v.playbackRate=1.6; v.play().catch(()=>{}); } },2450); }
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; if(reduce) return; setTimeout(()=>{ if(v.isConnected){ v.playbackRate=2.1; v.play().catch(()=>{}); } },2450); }
 // stessa altezza per tutti; se non ci stanno in larghezza, si rimpiccioliscono tutti insieme
 function fitFigs(root){
   root.querySelectorAll('.rc-figs').forEach(c=>{ const ims=[...c.querySelectorAll('img')];
@@ -3496,9 +3496,10 @@ function checkFx(){
   } }
   const tr=live.trans;
   if(tr&&tr.at&&tr.at!==lastTrans){ lastTrans=tr.at; if(Date.now()-tr.at<8000){
-    const el=$('#tvEye'); const showEye=tr.kind!=='char'; if(showEye){ el.innerHTML=`<div class="ey-bg"></div><div class="ey-band"></div><div class="ey-txt"><b>${esc(tr.title||'')}</b><span>PLUS ULTRA</span></div>`;
+    const el=$('#tvEye'); const showEye=!/^char/.test(tr.kind||''); if(showEye){ el.innerHTML=`<div class="ey-bg"></div><div class="ey-band"></div><div class="ey-txt"><b>${esc(tr.title||'')}</b><span>PLUS ULTRA</span></div>`;
     el.hidden=false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
-    const chosen=live.music.stingId&&localTracks.find(x=>x.id===live.music.stingId); const st=chosen?[chosen]:localTracks.filter(x=>x.cat==='stacco'); if(st.length){ const pick=st[Math.floor(Math.random()*st.length)]; const m=PL[pi], v=+live.music.vol||.8; if(curTrack&&!m.paused){ fade(m,v*.15,250); setTimeout(()=>fade(m,v,900),2600); } sfxPlay(pick.id,v); }
+    const chosen=live.music.stingId&&localTracks.find(x=>x.id===live.music.stingId); const st=chosen?[chosen]:localTracks.filter(x=>x.cat==='stacco'); if(st.length){ const pick=st[Math.floor(Math.random()*st.length)]; const go=()=>{ const m=PL[pi], v=+live.music.vol||.8; if(curTrack&&!m.paused){ fade(m,v*.15,250); setTimeout(()=>fade(m,v,900),2600); } sfxPlay(pick.id,v); };
+      if(tr.kind==='char') setTimeout(go,2450); else go(); }
     if(showEye){ clearTimeout(eyeTimer); eyeTimer=setTimeout(()=>{ el.classList.remove('on'); el.hidden=true; },2700); }
   } }
   const sg=live.siglaAt;
