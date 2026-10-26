@@ -1240,7 +1240,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 26/10 · 09:15</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 26/10 · 09:20</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -3288,7 +3288,7 @@ function tvChart(){
 }
 // logo animato sul cartellino: parte quando sono usciti tutti i titoli
 function startLogo(root){ const v=root.querySelector('.tvo-logo video'); if(!v) return; try{ v.pause(); v.currentTime=0; }catch(e){}
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; if(reduce) return; setTimeout(()=>{ if(v.isConnected) v.play().catch(()=>{}); },2450); }
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; if(reduce) return; setTimeout(()=>{ if(v.isConnected){ v.playbackRate=1.6; v.play().catch(()=>{}); } },2450); }
 // stessa altezza per tutti; se non ci stanno in larghezza, si rimpiccioliscono tutti insieme
 function fitFigs(root){
   root.querySelectorAll('.rc-figs').forEach(c=>{ const ims=[...c.querySelectorAll('img')];
