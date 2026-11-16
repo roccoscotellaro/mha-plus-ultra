@@ -856,9 +856,10 @@ body.tvmode{overflow:hidden;background:#07090f}
 @media (prefers-reduced-motion:no-preference){ .tvo-logo{animation:tvoFade .15s linear 2.4s both} }
 /* ===== Personaggi in sovrimpressione sulla scena ===== */
 .tv-ov{position:absolute;inset:0;pointer-events:none;z-index:3}
-.tv-ovf{--pc:#2a9d8f;position:absolute;bottom:0;height:80vh;transform:translateX(-50%);transition:left .6s cubic-bezier(.2,.8,.2,1),width .6s;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.tv-ovf{--pc:#2a9d8f;position:absolute;bottom:0;height:80vh;transform:translateX(-50%);transition:left .6s cubic-bezier(.2,.8,.2,1),width .6s,height .6s;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
 .tv-ovf img{height:calc(100% - 7vh);width:auto;max-width:none;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 0 .25vw #fff) drop-shadow(.5vw .5vw 0 var(--pc))}
-.tv-ovf .tv-ovn{margin:0 0 2.2vh;font-family:var(--f-display);font-size:2.6vw;letter-spacing:.04em;line-height:1;color:#fff;background:#07090f;border-left:.6vw solid var(--pc);padding:.5vh 1.2vw;transform:skewX(-8deg);white-space:nowrap}
+.tv-ovf .tv-ovn{margin:0 0 2.2vh;font-family:var(--f-display);font-size:var(--ovfs,2.6vw);letter-spacing:.04em;line-height:1;color:#fff;background:#07090f;border-left:.6vw solid var(--pc);padding:.5vh 1.2vw;transform:skewX(-8deg);white-space:nowrap}
+.tv-ovf.alt .tv-ovn{margin-bottom:9vh}
 .tv-ovf.inL{animation:ovInL .7s cubic-bezier(.2,.8,.2,1) both}.tv-ovf.inR{animation:ovInR .7s cubic-bezier(.2,.8,.2,1) both}
 .tv-ovf.out{animation:ovOut .45s ease-in both}
 @keyframes ovInL{from{transform:translateX(-50%) translateX(-60vw)}to{transform:translateX(-50%)}}
@@ -1305,7 +1306,7 @@ body.tvmode #viewSchermo{position:fixed;inset:0;transform:scale(calc(1 - var(--t
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 16/11 · 20:50</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 17/11 · 00:30</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -3000,7 +3001,7 @@ function renderRegia(){
       <div class="rg-cb"><small>${esc(s.sub||'')}</small><div class="rg-acts"><button class="btn sm primary" data-rg="showscene" data-id="${esc(s.id)}">Mostra</button><button class="btn sm" data-rg="editscene" data-id="${esc(s.id)}">Modifica</button></div></div></article>`).join('')||'<p class="empty">Nessuna scena. Creane una con immagine e brano.</p>'}</div></section>`;
   // sovrimpressione sulla scena
   const ov=live.ov||[];
-  h+=`<section class="rg-box"><div class="rg-h"><h3>Personaggi sopra la scena</h3><span class="hint" style="margin:0">Compaiono a figura intera sopra la scena in onda, fino a 4. Si vedono solo in modalità Scena.</span></div>
+  h+=`<section class="rg-box"><div class="rg-h"><h3>Personaggi sopra la scena</h3><span class="hint" style="margin:0">Compaiono a figura intera sopra la scena in onda, fino a 8. Si vedono solo in modalità Scena.</span></div>
     <div class="rg-chips">${store.chars.map(c=>{ const on=ov.some(o=>o.t==='pg'&&o.id===c.id); return `<button class="rg-pc${on?' on':''}" style="--pc:${esc(c.color||'#2a9d8f')}" data-rg="ovpg" data-id="${esc(c.id)}" aria-pressed="${on}">${portraitOf(c)?`<img src="${esc(portraitOf(c))}" alt="">`:''}<span>${esc(c.name||'PG')}</span></button>`; }).join('')}</div>
     <div class="rg-row" style="margin-top:8px"><select id="ovPng" aria-label="PNG da aggiungere">${foldersAll().map(f=>`<optgroup label="${esc(f)}">${R.pngs.filter(p=>folderOf(p)===f&&looksOf(p).some(l=>l.img)).map(p=>opt(p.id,p.hero?p.hero+' · '+p.name:p.name,'')).join('')}</optgroup>`).join('')}</select><button class="btn sm primary" data-rg="ovadd">Aggiungi in scena</button>${ov.length?'<button class="btn sm ghost" data-rg="ovclr">Togli tutti</button>':''}</div>
     ${ov.length?`<div class="rg-list" style="margin-top:8px">${ov.map((o,i)=>{ const f=ovFull(o)||{name:'?'}; const L=o.t==='pg'?Object.keys(PG_LOOKS).filter(k=>(IMG[o.id]||{})[k]).map(k=>({id:k,label:PG_LOOKS[k]})):looksOf(pngOf(o.id)).filter(l=>l.img);
@@ -3255,7 +3256,7 @@ document.addEventListener('click',async e=>{
   else if(a==='teststing'){ const sc0=R.scenes.find(x=>x.id===live.sceneId); live.trans={at:Date.now(),title:(sc0&&sc0.title)||'Prova stacco'}; saveLive(); toast('Stacco inviato allo schermo'); }
   else if(a==='showscene'){ if(live.music.sting!==false&&(id!==live.sceneId||live.mode!=='scena')){ const sc0=R.scenes.find(x=>x.id===id); live.trans={at:Date.now(),title:(sc0&&sc0.title)||''}; } live.sceneId=id; if(live.mode!=='fight') live.mode='scena'; autoMusic(live.mode==='fight'?'fight':'scena'); saveLive(); }
   else if(a==='ovpg'||a==='ovadd'){ live.ov=live.ov||[]; const pid=a==='ovpg'?id:(document.getElementById('ovPng')||{}).value; const t=a==='ovpg'?'pg':'png'; if(!pid) return;
-    const k=live.ov.findIndex(o=>o.t===t&&o.id===pid); if(k>=0){ if(a==='ovpg') live.ov.splice(k,1); } else { if(live.ov.length>=4) live.ov.shift(); const p0=t==='png'?pngOf(pid):null; live.ov.push({t,id:pid,look:p0?((lookOf(p0)||{}).id||''):''}); }
+    const k=live.ov.findIndex(o=>o.t===t&&o.id===pid); if(k>=0){ if(a==='ovpg') live.ov.splice(k,1); } else { if(live.ov.length>=8) live.ov.shift(); const p0=t==='png'?pngOf(pid):null; live.ov.push({t,id:pid,look:p0?((lookOf(p0)||{}).id||''):''}); }
     if(live.mode!=='scena'&&live.sceneId&&live.ov.length) live.mode='scena'; saveLive(); }
   else if(a==='ovdel'){ (live.ov||[]).splice(+id,1); saveLive(); }
   else if(a==='ovclr'){ live.ov=[]; saveLive(); }
@@ -3391,14 +3392,14 @@ function renderOv(box){
   const items=live.mode==='scena'?(live.ov||[]).map(o=>Object.assign({k:o.t+':'+o.id+':'+(o.look||'')},ovFull(o)||{})).filter(x=>x.src):[];
   const n=items.length, keys=new Set(items.map(i=>i.k));
   box.querySelectorAll('.tv-ovf').forEach(el=>{ if(!keys.has(el.dataset.k)&&!el.classList.contains('out')){ el.classList.add('out'); el.classList.remove('inL','inR'); setTimeout(()=>el.remove(),480); } });
-  const w=n<=1?34:n===2?32:Math.min(28,92/n);
+  const w=n<=1?34:n===2?32:Math.min(28,92/n), hh=n<=4?80:Math.max(58,80-(n-4)*5.5), fs=n<=4?2.6:Math.max(1.5,2.6-(n-4)*.28);
   items.forEach((it,i)=>{
     const x=n===1?74:n===2?[24,76][i]:6+88*(i+.5)/n;
     let el=[...box.querySelectorAll('.tv-ovf:not(.out)')].find(e=>e.dataset.k===it.k);
     if(!el){ el=document.createElement('div'); el.className='tv-ovf '+(x<50?'inL':'inR'); el.dataset.k=it.k; box.appendChild(el); }
     const html=`<img src="${esc(it.src)}" alt=""><span class="tv-ovn">${esc(String(it.name).toUpperCase())}</span>`;
     if(el._h!==html){ el._h=html; el.innerHTML=html; }
-    el.style.left=x+'vw'; el.style.width=w+'vw'; el.style.setProperty('--pc',/^#[0-9a-f]{6}$/i.test(it.color||'')?it.color:'#2a9d8f');
+    el.style.left=x+'vw'; el.style.width=w+'vw'; el.style.height=(n>4&&i%2===1?hh-4:hh)+'vh'; el.style.zIndex=n>4?String(i%2?1:2):''; el.style.setProperty('--ovfs',fs+'vw'); el.classList.toggle('alt',n>4&&i%2===1); el.style.setProperty('--pc',/^#[0-9a-f]{6}$/i.test(it.color||'')?it.color:'#2a9d8f');
   });
 }
 /* ---------- chi è: collega un nome scritto a un PG o PNG per foto e colore ---------- */
