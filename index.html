@@ -893,6 +893,11 @@ body.tvmode{overflow:hidden;background:#07090f}
 @keyframes exRow{from{transform:translateX(-6vw);opacity:0}}
 /* ===== Margine di sicurezza per TV che tagliano i bordi (overscan) ===== */
 body.tvmode #viewSchermo{position:fixed;inset:0;transform:scale(calc(1 - var(--tvsafe,0) / 50));transform-origin:50% 50%}
+/* ===== Tiri dalle schede ===== */
+.rg-rolls{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.rg-rolls li{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 6px;border:1px solid var(--line);background:var(--red-soft)}
+.rg-rolls li .btn{margin-left:auto}
+.rg-rolls small{color:var(--muted)}
 /* ===== Test dei Quirk ===== */
 .tv-qt{position:absolute;inset:0;display:flex;flex-direction:column;padding:4vh 4vw 3vh;background:#0b1430 radial-gradient(circle at 15% 0,#7a2330 0,transparent 50%),radial-gradient(circle at 90% 100%,#23357a 0,transparent 55%);color:#f4f5fb;overflow:hidden}
 .qt-head{display:flex;align-items:flex-end;gap:2vw;border-bottom:.4vh solid var(--tvy);padding-bottom:1.2vh;margin-bottom:1.6vh;animation:exHead .6s cubic-bezier(.2,.8,.2,1) both}
@@ -1306,7 +1311,7 @@ body.tvmode #viewSchermo{position:fixed;inset:0;transform:scale(calc(1 - var(--t
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 17/11 · 00:40</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 17/11 · 01:00</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2037,7 +2042,12 @@ function derive(){
   if(has('Webslinging'))moves.push(['Oscillare con una fune',run*3]);
   if(has('Webgliding'))moves.push(['Planata',run*2]);
   if(has('Jump 2'))moves.push(['Salto',r*run]);else if(has('Jump 1'))moves.push(['Salto in ogni direzione',run]);
-  return {mult,def,hpMax,fcMax,run,half,dr,fdr,sets,bonus,pwMax,ptsMax,ptsUsed,trMax,trUsed,moves,karmaMax:r};
+  const chk={M:multB.M,A:multB.A,E:multB.E,L:multB.L,R:0,V:0};
+  const defVs={M:def.M,A:def.A,E:def.V,L:def.L}, defBy={M:'',A:'',E:'',L:''};
+  if(has('Brawling')&&def.M>defVs.A){ defVs.A=def.M; defBy.A='Rissa'; }
+  if(has('Evasion')&&def.A>defVs.M){ defVs.M=def.A; defBy.M='Evasione'; }
+  if(has('Integrity')&&def.L>defVs.E){ defVs.E=def.L; defBy.E='Integrità'; }
+  return {mult,def,hpMax,fcMax,run,half,dr,fdr,sets,bonus,pwMax,ptsMax,ptsUsed,trMax,trUsed,moves,karmaMax:r,chk,defVs,defBy};
 }
 function powStatus(setId,p){ // [ok, messaggi]
   const msgs=[];
@@ -2092,7 +2102,7 @@ function renderAbil(){
       <div class="L" aria-hidden="true">${x.k}</div>
       <div class="nm">${x.n}<small>${x.en}</small></div>
       <div class="val"><button data-ab="${x.k}" data-d="-1" aria-label="Diminuisci ${x.n}">−</button><b>${fmt(v)}</b><button data-ab="${x.k}" data-d="1" aria-label="Aumenta ${x.n}">+</button></div>
-      <div class="stats"><span>Difesa <b>${d.def[x.k]}</b></span><span>Danno <b>×${d.mult[x.k]}</b></span></div>
+      <div class="stats"><span>Difesa <b>${d.def[x.k]}</b></span><span title="Moltiplicatore del danno: il dado Marvel si moltiplica per questo numero (Rank${d.mult[x.k]>C.rank?' + poteri come Possente':''})">Molt. danno <b>×${d.mult[x.k]}</b></span>${d.chk[x.k]?`<span title="Bonus dei poteri permanenti alle prove che non sono attacchi">Prove <b>+${d.chk[x.k]}</b></span>`:''}</div>
       <div class="roll"><button class="btn" data-roll="${x.k}">Tira</button><button class="btn" data-roll="${x.k}" data-atk="1">Attacco</button></div>
     </div>`}).join('');
   const p=$('#ptsPill'); p.textContent=`${d.ptsUsed} / ${d.ptsMax} punti`;
@@ -2497,9 +2507,11 @@ function roll3(m){
   return {dice,rr,note,fant,sum,dm:eff(dice[1],1)};
 }
 function diceHtml(r){ return '<div class="dice">'+[0,1,2].map(i=>`<div class="die anim${i===1?' m':''}${i===r.rr?' rr':''}" aria-label="${i===1?'dado Marvel':'dado'} ${i===1&&r.dice[1]===1?'M':r.dice[i]}">${i===1&&r.dice[1]===1?'M':r.dice[i]}</div>`).join('')+'</div>' }
+const CHKN={M:'Possente',A:'Precisione',E:'Disciplina',L:'Genialità'};
+function shareRoll(o){ if(!C||C._locked) return; C.lastRoll=Object.assign({at:Date.now()},o); C.updatedAt=Date.now(); lsSave(); queue(C.id); }
 function rollAbility(k,atk){
-  const a=AB.find(x=>x.k===k), v=C.ab[k], d=derive(), r=roll3(mode), tot=r.sum+v;
-  let txt=`<b>${a.n}</b> ${fmt(v)}${r.fant?' <span class="fan">Fantastico</span>':''}`;
+  const a=AB.find(x=>x.k===k), v=C.ab[k], d=derive(), r=roll3(mode), cb=atk?0:(d.chk[k]||0), tot=r.sum+v+cb;
+  let txt=`<b>${a.n}</b> ${fmt(v)}${cb?` +${cb} ${CHKN[k]}`:''}${r.fant?' <span class="fan">Fantastico</span>':''}`;
   if(atk){
     let dmg=r.dm*d.mult[k]+v; let x='';
     if(r.fant&&k==='M'){dmg*=2;x=' (raddoppiati, colpo Fantastico in mischia)'}
@@ -2508,6 +2520,7 @@ function rollAbility(k,atk){
   }
   if(r.note) txt+=`<br><span style="opacity:.75">${r.note}</span>`;
   showRes(r,tot,txt);
+  shareRoll({k,atk:!!atk,tot,md:r.dice[1],fant:r.fant,dice:r.dice});
 }
 function rollRecovery(k){
   const v=C.ab[k], r=roll3(mode), tot=r.sum+v, ok=tot>=10;
@@ -2523,6 +2536,7 @@ $('#bInit').onclick=()=>{
   let txt=`<b>Iniziativa</b> ${fmt(C.ab.V)}${r.fant?' <span class="fan">Fantastico</span>: round bonus prima di tutti':''}`;
   if(r.note) txt+=`<br><span style="opacity:.75">${r.note}</span>`;
   showRes(r,tot,txt);
+  shareRoll({k:'init',tot,md:r.dice[1],fant:r.fant,dice:r.dice});
 };
 function showRes(r,tot,txt){ $('#res').innerHTML=`${diceHtml(r)}<div class="tot">${tot}</div><div class="txt">${txt}</div>`; if(mode!==0) setMode(0); }
 
@@ -2591,6 +2605,7 @@ function applySnap(snap){
   if(!store.chars.includes(C)){ C=store.chars[0]; store.current=C.id; cur=true; }
   if(cur) renderAll(); else if(list) renderSel();
   if(list||cur) lsSave();
+  if((list||cur)&&typeof refresh==='function') refresh();
 }
 (function init(){
   const l=loadLocal();
@@ -2875,7 +2890,7 @@ function part(key){
     if(c._locked){ const v=c.der||{}, hm=+v.hpMax||10, fm=+v.fcMax||10, z={M:10,A:10,R:10,V:10,E:10,L:10};
       return {key,kind:'pg',name:c.name||c.hero||'PG',short:(c.name||c.hero||'PG').split(' ')[0],img:portraitOf(c),hp:c.hp==null?hm:c.hp,hpMax:hm,fc:c.fc==null?fm:c.fc,fcMax:fm,def:z,mult:{M:1,A:1,R:1,V:1,E:1,L:1},ab:c.ab,dr:0,fdr:0,conds:c.conds||[],color:c.color||'#2a9d8f'}; }
     const d=statsOf(c);
-    return {key,kind:'pg',name:c.name||c.hero||'PG',short:(c.name||c.hero||'PG').split(' ')[0],img:portraitOf(c),hp:c.hp==null?d.hpMax:c.hp,hpMax:d.hpMax,fc:c.fc==null?d.fcMax:c.fc,fcMax:d.fcMax,def:d.def,mult:d.mult,ab:c.ab,dr:d.dr,fdr:d.fdr,conds:c.conds||[],color:c.color||'#2a9d8f'};
+    return {key,kind:'pg',name:c.name||c.hero||'PG',short:(c.name||c.hero||'PG').split(' ')[0],img:portraitOf(c),hp:c.hp==null?d.hpMax:c.hp,hpMax:d.hpMax,fc:c.fc==null?d.fcMax:c.fc,fcMax:d.fcMax,def:d.def,defVs:d.defVs,defBy:d.defBy,mult:d.mult,ab:c.ab,dr:d.dr,fdr:d.fdr,conds:c.conds||[],color:c.color||'#2a9d8f',lastRoll:c.lastRoll||null};
   }
   const e=((live.fight&&live.fight.enemies)||[]).find(x=>x.k===key.slice(3)); if(!e) return null;
   const p=pngOf(e.png)||{}; const ab=Object.assign({M:0,A:0,R:0,V:0,E:0,L:0},p.ab||{}); const rank=+p.rank||1;
@@ -3131,7 +3146,7 @@ function fightHtml(){
   const cur=parts[f.turn]?parts[f.turn].p:null;
   if(!atk.from&&cur) atk.from=cur.key;
   const A=part(atk.from), T=part(atk.to);
-  const defK=DEFOF[atk.ab]; const def=T?T.def[defK]:null;
+  const defK=DEFOF[atk.ab]; const def=T?((T.defVs&&T.defVs[atk.ab]!=null)?T.defVs[atk.ab]:T.def[defK]):null; const defAlt=T&&T.defBy?T.defBy[atk.ab]:'';
   const roll=parseInt(atk.roll); const hit=T&&!isNaN(roll)?roll>=def:null;
   let calc='';
   if(A&&T&&hit){
@@ -3154,13 +3169,14 @@ function fightHtml(){
         <label class="rg-amt">Quantità per − e + <input type="number" id="rgAmt" min="1" value="${R.amt||5}"></label>
       </div>
       <div class="rg-atk">
+        ${(()=>{ const now=Date.now(); const L=parts.filter(({p})=>p.kind==='pg'&&p.lastRoll&&now-p.lastRoll.at<15*60000).sort((a,b)=>b.p.lastRoll.at-a.p.lastRoll.at); if(!L.length) return ''; return `<div class="rg-sub">Tiri dalle schede</div><ul class="rg-rolls">${L.map(({p})=>{ const t=p.lastRoll, m=Math.round((now-t.at)/60000); const what=t.k==='init'?'Iniziativa':(t.atk?'Attacco ':'Prova ')+(ABN[t.k]||''); return `<li><b>${esc(p.short)}</b> · ${esc(what)}: <b>${t.tot}</b>${t.fant?' <span class="tag">Fantastico</span>':''} <small>dado Marvel ${t.md===1?'M':t.md} · ${m?m+' min fa':'adesso'}</small>${t.k==='init'?`<button class="btn sm" data-rg="useinit" data-k="${esc(p.key)}">Usa</button>`:t.atk?`<button class="btn sm" data-rg="useroll" data-k="${esc(p.key)}">Usa</button>`:''}</li>`; }).join('')}</ul>`; })()}
         <div class="rg-sub">Attacco</div>
         <label>Chi attacca<select id="aFrom">${parts.map(({p})=>opt(p.key,p.name,atk.from)).join('')}</select></label>
         <label>Bersaglio<select id="aTo">${opt('','— scegli —',atk.to)}${parts.filter(({p})=>p.key!==atk.from).map(({p})=>opt(p.key,p.name,atk.to)).join('')}</select></label>
         ${A&&A.kind==='pg'?`<label>Con quale tecnica<select id="aPw">${opt('','— attacco normale —',atk.pw)}${pgMoves(store.chars.find(c=>c.id===A.key.slice(3))).map(m=>opt(m.en,m.nick?m.nick+' ('+m.it+')':m.it,atk.pw)).join('')}</select></label>
         ${atk.pw?`<label class="rg-chk"><input type="checkbox" id="aFx"${atk.fx?' checked':''}> Animazione della tecnica sulla TV quando colpisce</label>`:''}`:''}
         <div class="seg rg-seg" role="group" aria-label="Con cosa attacca">${['M','A','E','L'].map(k=>`<button data-rg="ab" data-v="${k}" aria-pressed="${atk.ab===k}">${ABN[k]}</button>`).join('')}</div>
-        <p class="rg-def">${T?`${esc(T.name)} si difende con <b>${ABN[defK]} ${def}</b>`:'Scegli il bersaglio per vedere la sua difesa.'}</p>
+        <p class="rg-def">${T?`${esc(T.name)} si difende con <b>${defAlt?esc(defAlt):ABN[defK]} ${def}</b>`:'Scegli il bersaglio per vedere la sua difesa.'}</p>
         <label>Totale del tiro (3d6 + caratteristica)<input id="aRoll" type="number" value="${esc(atk.roll)}"></label>
         <p class="rg-hit ${hit===true?'yes':hit===false?'no':''}">${hit===true?'Colpito!':hit===false?'Mancato':'&nbsp;'}</p>
         ${hit?`<label>Dado Marvel (1 = Fantastico)<input id="aMd" type="number" min="1" max="6" value="${esc(atk.md)}"></label>
@@ -3219,6 +3235,8 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-rg]'); if(!b||!b.closest('#viewRegia')) return;
   const a=b.dataset.rg, id=b.dataset.id;
   if(a==='mode'){ live.mode=b.dataset.v; if(live.mode==='scena') autoMusic('scena'); saveLive(); }
+  else if(a==='useroll'){ const p=part(b.dataset.k); const t=p&&p.lastRoll; if(!t) return; atk.from=p.key; atk.ab=t.k; if(t.k==='E'||t.k==='L') atk.pool='fc'; atk.roll=String(t.tot); atk.md=String(t.md===1?1:t.md); atk.dmg=''; atk._auto=null; renderRegia(); }
+  else if(a==='useinit'){ const p=part(b.dataset.k); const t=p&&p.lastRoll; const o=live.fight&&live.fight.order.find(x=>x.key===b.dataset.k); if(!t||!o) return; o.init=t.tot; o.fant=!!t.fant; saveLive(); renderRegia(); }
   else if(a==='safe'){ live.safe=Math.max(0,Math.min(10,(+live.safe||0)+(+b.dataset.d||0))); saveLive(); renderRegia(); }
   else if(a==='qtshow'){ qtS(); live.mode='test'; saveLive(); renderRegia(); }
   else if(a==='qtev'){ qtS().ev=Math.max(0,Math.min(QT_EV.length,+b.dataset.v||0)); saveLive(); renderRegia(); }
