@@ -1233,6 +1233,12 @@ body.tvmode{overflow:hidden;background:#07090f}
     </div>
   </section>
 
+  <section class="s">
+    <div class="sh"><h2>Dossier personale</h2></div>
+    <p class="hint">Segreti, indagini e informazioni che conosce solo il personaggio. Come il resto della scheda, lo vedete solo tu e il master.</p>
+    <textarea data-f="dossier" rows="14" placeholder="Quello che il personaggio sa e gli altri no"></textarea>
+  </section>
+
   </div>
 
   <div class="foot">
@@ -1953,7 +1959,7 @@ function blank(){
     ab:{M:0,A:0,R:0,V:0,E:0,L:0},convPts:0,convTraits:0,powers:[],element:'Fuoco',
     traits:[{en:'Quick Learner',occ:true}],
     tags:[{en:'Mentor',occ:true,detail:''},{en:'Obligation',occ:true,detail:'Scuola'},{en:'Heroic',occ:true},{en:'Young',occ:true}],
-    growth:{},photo:'',jpName:'',jpReading:'',color:'#2a9d8f',birthday:'',height:'',likes:'',blurb:'',support:[],bio:'',notes:'',hp:null,fc:null,karma:null,conds:[],updatedAt:Date.now()};
+    growth:{},photo:'',jpName:'',jpReading:'',color:'#2a9d8f',birthday:'',height:'',likes:'',blurb:'',support:[],bio:'',notes:'',dossier:'',hp:null,fc:null,karma:null,conds:[],updatedAt:Date.now()};
 }
 let store = {chars:[], current:null};
 let C = null; // personaggio attivo
@@ -2701,6 +2707,7 @@ async function makePdf(){
   if(C.support&&C.support.filter(s=>s.name).length){head('Equipaggiamento di supporto');C.support.filter(s=>s.name).forEach(s=>{para(s.name,9.5,INK,'bold');para(s.desc,8.5,MUT,'normal',2,3.9);});}
   if(C.bio){head('Storia');para(C.bio);}
   if(C.notes){head('Note');para(C.notes);}
+  if(C.dossier){head('Dossier personale');para(C.dossier);}
   // piè di pagina
   const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(7);col(MUT);doc.text(T('Scheda eroe d616 Plus Ultra  ·  '+(C.name||'')+'  ·  pagina '+i+' di '+n),W/2,H-6,{align:'center'});}
   const fn=(C.name||C.hero||'eroe').replace(/[^\w\-àèéìòù ]+/g,'').trim().replace(/\s+/g,'_')+'.pdf';
