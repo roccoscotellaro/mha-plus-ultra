@@ -890,6 +890,43 @@ body.tvmode{overflow:hidden;background:#07090f}
 .ex-list .pt small{font-family:var(--f-body);font-size:.45em;margin-left:.2em;color:var(--tvmut)}
 @keyframes exHead{from{transform:translateY(-6vh);opacity:0}}
 @keyframes exRow{from{transform:translateX(-6vw);opacity:0}}
+/* ===== Margine di sicurezza per TV che tagliano i bordi (overscan) ===== */
+body.tvmode #viewSchermo{position:fixed;inset:0;transform:scale(calc(1 - var(--tvsafe,0) / 50));transform-origin:50% 50%}
+/* ===== Test dei Quirk ===== */
+.tv-qt{position:absolute;inset:0;display:flex;flex-direction:column;padding:4vh 4vw 3vh;background:#0b1430 radial-gradient(circle at 15% 0,#7a2330 0,transparent 50%),radial-gradient(circle at 90% 100%,#23357a 0,transparent 55%);color:#f4f5fb;overflow:hidden}
+.qt-head{display:flex;align-items:flex-end;gap:2vw;border-bottom:.4vh solid var(--tvy);padding-bottom:1.2vh;margin-bottom:1.6vh;animation:exHead .6s cubic-bezier(.2,.8,.2,1) both}
+.qt-head .ua{font-family:var(--f-display);font-size:5vw;line-height:.8;color:#07090f;background:var(--tvy);padding:.6vh 1vw;transform:skewX(-8deg)}
+.qt-head h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:4.2vw;line-height:.9;letter-spacing:.03em}
+.qt-head p{margin:.4vh 0 0;font-size:1.4vw;letter-spacing:.18em;text-transform:uppercase;color:var(--tvmut)}
+.qt-head .ev{margin-left:auto;text-align:right}
+.qt-head .ev small{display:block;font-size:1.3vw;letter-spacing:.2em;text-transform:uppercase;color:var(--tvmut)}
+.qt-head .ev b{display:block;font-family:var(--f-display);font-weight:400;font-size:3.2vw;line-height:1;color:var(--tvy)}
+.qt-list{flex:1;list-style:none;margin:0;padding:0;display:grid;grid-auto-flow:column;grid-template-rows:repeat(var(--rows),minmax(0,1fr));grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:.7vh 2.4vw;min-height:0}
+.qt-list li{--pc:#3a4a80;display:grid;grid-template-columns:3.6vw calc(var(--rh) * .9) minmax(0,1fr) auto auto;align-items:center;gap:1vw;background:rgba(19,32,74,.9);border-left:.5vw solid #3a4a80;padding:0 1.2vw 0 .6vw;font-size:min(1.9vw,calc(var(--rh) * .42));min-height:0}
+.qt-list li.pg{background:linear-gradient(90deg,color-mix(in srgb,var(--pc) 55%,#13204a),#13204a 70%);border-left-color:var(--pc);font-weight:700}
+.qt-list li.qt-top{outline:.3vh solid var(--tvy)}
+.qt-list li.qt-last{outline:.3vh solid var(--tvr)}
+.qt-list li.qt-flash{animation:qtFlash 1.6s ease-out both}
+.qt-list .pos{font-family:var(--f-display);font-size:1.5em;color:var(--tvy);text-align:center}
+.qt-list .mini{width:calc(var(--rh) * .9);height:calc(var(--rh) * .9);border:.2vh solid rgba(255,255,255,.4)}
+.qt-list .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qt-list .nm em{font-style:normal;font-size:.6em;letter-spacing:.14em;text-transform:uppercase;background:var(--tvr);color:#fff;padding:.15em .5em;margin-left:.6em;vertical-align:middle}
+.qt-cells{display:flex;gap:.35vw}
+.qt-cells span{min-width:2.2em;text-align:center;font-size:.75em;padding:.15em .2em;background:rgba(7,9,15,.55);color:#cfd6ff;font-variant-numeric:tabular-nums}
+.qt-cells span.qt-on{background:var(--tvy);color:#07090f;font-weight:700}
+.qt-cells span.qt-fa{box-shadow:inset 0 0 0 .15vw var(--tvy)}
+.qt-list .pt{font-family:var(--f-display);font-weight:400;font-size:1.6em;color:#fff;min-width:2.6em;text-align:right;font-variant-numeric:tabular-nums}
+.qt-list.narrow .qt-cells span:not(.qt-on){display:none}
+@keyframes qtFlash{0%{background:var(--tvy);color:#07090f;transform:scale(1.03)}100%{}}
+@media (prefers-reduced-motion:reduce){.tv-qt *{animation:none!important}}
+.rg-qt{width:100%;border-collapse:collapse;font-size:14px}
+.rg-qt th,.rg-qt td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:middle}
+.rg-qt td.n{overflow-wrap:anywhere}
+.rg-qtw{overflow-x:auto}
+.rg-qt td,.rg-qt th{padding:4px 4px}
+.rg-qt input[type=number]{width:58px}
+.rg-qt .tot{font-weight:700;text-align:right}
+.rg-qt small{color:var(--muted)}
 /* ===== Classifica degli eroi ===== */
 .tv-chart{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:3vw;padding:4vh 4vw;background:#07090f;background-image:repeating-linear-gradient(115deg,rgba(255,225,0,.05) 0 2vw,transparent 2vw 4vw);color:#f4f5fb;overflow:hidden}
 .ch-head{grid-column:1/-1;display:flex;align-items:baseline;gap:2vw;animation:exHead .6s both}
@@ -1268,7 +1305,7 @@ body.tvmode{overflow:hidden;background:#07090f}
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 26/10 · 09:50</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 16/11 · 20:50</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2896,8 +2933,9 @@ function renderRegia(){
   const modes=[['nero','Titolo'],['scena','Scena'],['personaggio','Personaggio'],['fight','Fight'],['tg','TG']];
   const ep=R.eps.find(x=>x.id===live.epId), cl=R.clues.find(x=>x.id===live.clueId);
   const showP=live.show?(live.show.t==='pg'?(store.chars.find(c=>c.id===live.show.id)||{}).name:(pngOf(live.show.id)||{}).name):'';
-  let h=`<div class="rg-onair"><div><span class="lab">In onda sullo schermo</span><b>${esc({nero:'Schermata del titolo',scena:'Scena: '+((sc&&sc.title)||'nessuna'),personaggio:'Personaggio: '+(showP||'nessuno'),fight:'Fight'+(live.fight?' · '+roundLbl(live.fight).toLowerCase():''),episodio:'Titolo episodio '+((ep&&ep.num)||''),recap:'Riassunto episodio '+((ep&&ep.num)||''),anteprima:'Anteprima del prossimo episodio',indizio:'Indizio: '+((cl&&cl.title)||''),tg:'Telegiornale',esame:'Risultati dell\'esame',classifica:'Classifica degli eroi',ammessi:'Ammessi alla 1-A'}[live.mode]||'')}</b></div>
-    <div class="rg-modes">${modes.map(([m,l])=>`<button class="btn sm${live.mode===m?' primary':''}" data-rg="mode" data-v="${m}"${m==='fight'&&!live.fight?' disabled':''}>${l}</button>`).join('')}</div></div>`;
+  let h=`<div class="rg-onair"><div><span class="lab">In onda sullo schermo</span><b>${esc({nero:'Schermata del titolo',scena:'Scena: '+((sc&&sc.title)||'nessuna'),personaggio:'Personaggio: '+(showP||'nessuno'),fight:'Fight'+(live.fight?' · '+roundLbl(live.fight).toLowerCase():''),episodio:'Titolo episodio '+((ep&&ep.num)||''),recap:'Riassunto episodio '+((ep&&ep.num)||''),anteprima:'Anteprima del prossimo episodio',indizio:'Indizio: '+((cl&&cl.title)||''),tg:'Telegiornale',esame:'Risultati dell\'esame',test:'Test dei Quirk',classifica:'Classifica degli eroi',ammessi:'Ammessi alla 1-A'}[live.mode]||'')}</b></div>
+    <div class="rg-modes">${modes.map(([m,l])=>`<button class="btn sm${live.mode===m?' primary':''}" data-rg="mode" data-v="${m}"${m==='fight'&&!live.fight?' disabled':''}>${l}</button>`).join('')}</div>
+    <div class="rg-row" style="margin-top:6px;align-items:center"><span class="hint" style="margin:0">Margine TV (se taglia i bordi):</span><button class="btn sm" data-rg="safe" data-d="-1" aria-label="Riduci margine">−</button><b>${+live.safe||0}%</b><button class="btn sm" data-rg="safe" data-d="1" aria-label="Aumenta margine">+</button></div></div>`;
   // musica
   const tr=R.tracks;
   h+=`<section class="rg-box"><div class="rg-h"><h3>Musica</h3><span class="hint" style="margin:0">I brani si caricano dallo Schermo, sul dispositivo collegato alla TV.</span></div>
@@ -2956,6 +2994,7 @@ function renderRegia(){
       <p class="hint w2" style="margin:0">Foto e colori arrivano da soli se il nome corrisponde a un PG o a un PNG. Le righe dei PG si colorano col loro colore. Scrivi "non ammesso" come classe per una riga in grigio.</p>
     </div></section>`;
   // scene
+  h+=qtHtml();
   h+=`<section class="rg-box"><div class="rg-h"><h3>Scene</h3><button class="btn sm primary" data-rg="newscene">+ Nuova scena</button></div>
     <div class="rg-grid">${R.scenes.map(s=>`<article class="rg-card${s.id===live.sceneId?' on':''}"><div class="rg-thumb" style="${srcOf(s.img)?`background-image:url('${srcOf(s.img)}')`:''}"><span>${esc(s.title||'Senza titolo')}</span></div>
       <div class="rg-cb"><small>${esc(s.sub||'')}</small><div class="rg-acts"><button class="btn sm primary" data-rg="showscene" data-id="${esc(s.id)}">Mostra</button><button class="btn sm" data-rg="editscene" data-id="${esc(s.id)}">Modifica</button></div></div></article>`).join('')||'<p class="empty">Nessuna scena. Creane una con immagine e brano.</p>'}</div></section>`;
@@ -3171,11 +3210,20 @@ document.addEventListener('change',e=>{
   else if(t.id==='aFx'){ atk.fx=t.checked; }
   else if(t.dataset.init){ const o=live.fight.order.find(x=>x.key===t.dataset.init); if(o){ o.init=t.value===''?null:+t.value; saveLive(); } }
   else if(t.dataset.fant){ const o=live.fight.order.find(x=>x.key===t.dataset.fant); if(o){ o.fant=t.checked; saveLive(); } }
+  else if(t.dataset.qts){ const q=qtS(), ev=q.ev; if(ev>=QT_EV.length) return; qtSet(t.dataset.qts,ev,t.value===''?null:+t.value); saveLive(); }
+  else if(t.dataset.qtf){ const q=qtS(), ev=q.ev; if(ev>=QT_EV.length) return; const k=t.dataset.qtf; qtSet(k,ev,((q.sc[k]||[])[ev]),t.checked); if(t.checked){ const p=qtParts().find(x=>x.key===k); if(p) qtBurst(p,ev); } saveLive(); renderRegia(); }
+  else if(t.id==='qtPng'){ qtS().png=t.checked; saveLive(); renderRegia(); }
 });
 document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-rg]'); if(!b||!b.closest('#viewRegia')) return;
   const a=b.dataset.rg, id=b.dataset.id;
   if(a==='mode'){ live.mode=b.dataset.v; if(live.mode==='scena') autoMusic('scena'); saveLive(); }
+  else if(a==='safe'){ live.safe=Math.max(0,Math.min(10,(+live.safe||0)+(+b.dataset.d||0))); saveLive(); renderRegia(); }
+  else if(a==='qtshow'){ qtS(); live.mode='test'; saveLive(); renderRegia(); }
+  else if(a==='qtev'){ qtS().ev=Math.max(0,Math.min(QT_EV.length,+b.dataset.v||0)); saveLive(); renderRegia(); }
+  else if(a==='qtreset'){ if(!confirm('Azzero tutti i punteggi del test?')) return; live.qt={ev:0,sc:{},fa:{},png:qtS().png}; saveLive(); renderRegia(); }
+  else if(a==='qtnpc'||a==='qtrollnpc'){ const q=qtS(), ev=q.ev; if(ev>=QT_EV.length) return; qtParts().filter(p=>!p.pg).forEach(p=>{ if(a==='qtnpc') qtSet(p.key,ev,10+qtAb(p,ev),false); else { const r=qtRoll(p,ev); qtSet(p.key,ev,r.tot,r.fant); } }); saveLive(); renderRegia(); }
+  else if(a==='qtroll'){ const q=qtS(), ev=q.ev; if(ev>=QT_EV.length) return; const p=qtParts().find(x=>x.key===b.dataset.k); if(!p) return; const r=qtRoll(p,ev); qtSet(p.key,ev,r.tot,r.fant); if(r.fant) qtBurst(p,ev); saveLive(); renderRegia(); toast(p.name+': '+r.tot+(r.fant?' · Fantastico! (+5)':'')); }
   else if(a==='mood'){ const t=moodPick(b.dataset.v); if(!t) return; live.music.track=t; live.music.playing=true; live.music.loop=false; live.music.restart=Date.now(); saveLive(); }
   else if(a==='play'){ live.music.playing=!live.music.playing; saveLive(); }
   else if(a==='newep'){ edit={col:'episodi',obj:{id:rid(),_new:true,num:(R.eps.reduce((m,x)=>Math.max(m,+x.num||0),0)+1)}}; renderRegia(); document.getElementById('rgEdit')?.scrollIntoView({behavior:'smooth'}); }
@@ -3273,6 +3321,7 @@ function bar(p,pool,showNum){ const v=pool==='hp'?p.hp:p.fc, m=pool==='hp'?p.hpM
   return `<div class="tv-bar ${pool}${pc<=25?' low':''}"><i style="width:${pc}%"></i></div>${showNum?`<span class="tv-num">${v}/${m}</span>`:''}`; }
 function renderTV(){
   if(R.view!=='schermo') return;
+  { const sv=Math.max(0,Math.min(10,+live.safe||0)); const vs=$('#viewSchermo'); if(vs.style.getPropertyValue('--tvsafe')!==String(sv)) vs.style.setProperty('--tvsafe',String(sv)); }
   const box=$('#tvStage'); const sc=R.scenes.find(s=>s.id===live.sceneId);
   const bg=sc&&srcOf(sc.img);
   let h='';
@@ -3305,6 +3354,7 @@ function renderTV(){
     h=`<div class="tv-clue ${esc(x.style||'foglio')}"><div class="paper"><h2>${esc(x.title||'')}</h2>
       ${img?`<div class="cimg"><img src="${esc(img)}" alt=""><div class="cover" style="height:${100-step*25}%"><span>?</span></div></div>`:''}
       <div class="ctext">${lines.map((l,i)=>`<p class="${i<k?'':'hid'}">${i<k?esc(l):'█████ ███ ██████'}</p>`).join('')}</div></div></div>`;
+  } else if(live.mode==='test'){ h=tvTest();
   } else if(live.mode==='esame'){ h=tvExam();
   } else if(live.mode==='classifica'){ h=tvChart();
   } else if(live.mode==='ammessi'){ h=tvAdmit();
@@ -3368,6 +3418,47 @@ function examRows(){
   return L;
 }
 function colsFor(n,max){ const cols=n>max?2:1; const rows=Math.max(1,Math.ceil(n/cols)); return {cols,rows}; }
+/* ---------- Test dei Quirk (il test di Aizawa, condotto da Hawks) ---------- */
+const QT_EV=[{n:'Lancio della palla',ab:['M','L']},{n:'50 metri',ab:['A']},{n:'Presa al dinamometro',ab:['M']},{n:'Flessibilità e salto',ab:['A']},{n:'Resistenza',ab:['R']},{n:'Percorso libero',ab:['M','A','R','V','E','L']}];
+function qtS(){ if(!live.qt||typeof live.qt!=='object') live.qt={ev:0,sc:{},fa:{},png:true}; const q=live.qt; q.sc=q.sc||{}; q.fa=q.fa||{}; if(q.png==null) q.png=true; return q; }
+function qtParts(){
+  const q=qtS(), L=store.chars.map(c=>({key:'pg:'+c.id,pg:true,name:c.name||c.hero||'PG',ab:c.ab||{},w:whoOf(c.name||c.hero)}));
+  if(q.png) R.pngs.filter(p=>/1\s*-?\s*a\b/i.test(folderOf(p))&&(p.kind||'')!=='nemico').forEach(p=>L.push({key:'png:'+p.id,pg:false,name:p.name||p.hero||'PNG',ab:p.ab||{},w:whoOf(p.name)||{pg:false,color:p.color,src:((pngThumb(p)||{}).src||''),crop:(pngThumb(p)||{}).crop}}));
+  return L;
+}
+function qtVal(key,i){ const q=qtS(), v=(q.sc[key]||[])[i]; if(v==null||v==='') return null; return (+v||0)+(((q.fa[key]||[])[i])?5:0); }
+function qtTot(key){ let t=0,n=0; QT_EV.forEach((e,i)=>{ const v=qtVal(key,i); if(v!=null){ t+=v; n++; } }); return {t,n}; }
+function qtAb(p,i){ const ks=QT_EV[i].ab; return Math.max(...ks.map(k=>+((p.ab||{})[k])||0)); }
+function qtSet(key,i,v,fant){ const q=qtS(); const a=q.sc[key]=(q.sc[key]||[]).slice(); while(a.length<QT_EV.length) a.push(null); a[i]=v; if(fant!=null){ const f=q.fa[key]=(q.fa[key]||[]).slice(); while(f.length<QT_EV.length) f.push(false); f[i]=!!fant; } q.last={key,at:Date.now()}; }
+function qtBurst(p,i){ const img=p.w&&p.w.src||''; live.burst={text:'FANTASTICO!',sub:p.name+' · '+QT_EV[i].n,img,color:(p.w&&p.w.color)||'#e1262f',sfx:((R.tracks.find(t=>t.cat==='sfx'&&/fant|colpo|hit|smash|impact/i.test(t.name))||{}).id)||'',at:Date.now(),kind:'fant'}; }
+function qtRows(){
+  const L=qtParts().map(p=>Object.assign(p,qtTot(p.key))).sort((a,b)=>(b.n?1:0)-(a.n?1:0)||b.t-a.t||a.name.localeCompare(b.name,'it'));
+  let pos=0,last=null; L.forEach((r,i)=>{ if(!r.n){ r.pos=0; return; } if(r.t!==last){ pos=i+1; last=r.t; } r.pos=pos; });
+  return L;
+}
+function tvTest(){
+  const q=qtS(), L=qtRows(), n=L.length, fin=q.ev>=QT_EV.length;
+  if(!n) return `<div class="tv-title"><p class="k">Test dei Quirk: nessun partecipante</p></div>`;
+  const cols=n>16?2:1, rows=Math.ceil(n/cols), rh=`calc((100vh - 24vh) / ${Math.max(rows,8)})`;
+  const S=L.filter(r=>r.n), done=S.length&&L.every(r=>r.n===QT_EV.length), lastPos=S.length?S[S.length-1].pos:0;
+  const fl=q.last&&Date.now()-q.last.at<4000?q.last.key:'';
+  return `<div class="tv-qt"><div class="qt-head"><span class="ua">U.A.</span><div><h2>Test dei Quirk</h2><p>Il test di Aizawa · Classe 1-A · Prof. Hawks</p></div>
+    <div class="ev"><small>${fin?'Fine del test':'Prova '+(q.ev+1)+' di '+QT_EV.length}</small><b>${esc(fin?'Classifica finale':QT_EV[q.ev].n)}</b></div></div>
+    <ol class="qt-list${cols>1?' narrow':''}" style="--rows:${Math.max(rows,8)};--cols:${cols};--rh:${rh}">${L.map(r=>{ const pc=r.pg&&r.w&&/^#[0-9a-f]{6}$/i.test(r.w.color||'')?r.w.color:''; const isLast=(done||fin)&&r.n&&lastPos>1&&r.pos===lastPos;
+      return `<li class="${pc?'pg':''}${r.n&&r.pos===1?' qt-top':''}${isLast?' qt-last':''}${r.key===fl?' qt-flash':''}" style="${pc?`--pc:${pc}`:''}"><span class="pos">${r.pos||'–'}</span>${miniHtml(r.w,r.name)}<span class="nm">${esc(r.name)}${isLast?'<em>Ultimo</em>':''}</span>
+      <span class="qt-cells">${QT_EV.map((e,i)=>{ const v=qtVal(r.key,i); const f=((q.fa[r.key]||[])[i]); return `<span class="${i===q.ev?'qt-on':''}${f?' qt-fa':''}">${v==null?'–':v}</span>`; }).join('')}</span><b class="pt">${r.n?r.t:'–'}</b></li>`; }).join('')}</ol></div>`;
+}
+function qtHtml(){
+  const q=qtS(), P=qtParts(), ev=Math.min(q.ev,QT_EV.length), fin=ev>=QT_EV.length;
+  return `<section class="rg-box"><div class="rg-h"><h3>Test dei Quirk</h3><div class="rg-acts"><button class="btn sm primary" data-rg="qtshow">${live.mode==='test'?'In onda':'Mostra sullo schermo'}</button><button class="btn sm" data-rg="qtreset">Azzera</button></div></div>
+    <div class="rg-modes">${QT_EV.map((e,i)=>`<button class="btn sm${ev===i?' primary':''}" data-rg="qtev" data-v="${i}">${i+1}. ${esc(e.n)}</button>`).join('')}<button class="btn sm${fin?' primary':''}" data-rg="qtev" data-v="${QT_EV.length}">Classifica finale</button></div>
+    ${fin?'<p class="hint">Sullo schermo c\'è la classifica finale; l\'ultimo è segnato in rosso.</p>':`<p class="hint" style="margin:6px 0">Prova: <b>${esc(QT_EV[ev].n)}</b> · abilità ${QT_EV[ev].ab.length>2?'quella del Quirk (uso la più alta)':QT_EV[ev].ab.map(k=>ABN[k]).join(' o ')}. Scrivi il totale del tiro; ★ = Fantastico (+5 e colpo speciale sulla TV). 🎲 tira il d616 con l'abilità.</p>
+    <div class="rg-row" style="margin-bottom:6px"><button class="btn sm" data-rg="qtnpc">PNG: 10 + abilità</button><button class="btn sm" data-rg="qtrollnpc">Tira per i PNG</button><label class="rg-chk"><input type="checkbox" id="qtPng"${q.png?' checked':''}> Compagni PNG (cartella "Classe 1-A")</label></div>
+    <div class="rg-qtw"><table class="rg-qt"><thead><tr><th>Studente</th><th>Tiro</th><th>★</th><th></th><th class="tot">Tot.</th></tr></thead><tbody>${P.map(p=>{ const v=(q.sc[p.key]||[])[ev]; const f=(q.fa[p.key]||[])[ev]; return `<tr><td class="n">${p.pg?'<b>'+esc(p.name)+'</b>':esc(p.name)} <small>+${qtAb(p,ev)}</small></td><td><input type="number" inputmode="numeric" data-qts="${esc(p.key)}" value="${v==null?'':esc(String(v))}" aria-label="Tiro di ${esc(p.name)}"></td><td><input type="checkbox" data-qtf="${esc(p.key)}"${f?' checked':''} aria-label="Fantastico di ${esc(p.name)}"></td><td><button class="btn sm ghost" data-rg="qtroll" data-k="${esc(p.key)}" aria-label="Tira per ${esc(p.name)}">🎲</button></td><td class="tot">${qtTot(p.key).t}</td></tr>`; }).join('')}</tbody></table></div>
+    <div class="rg-row" style="margin-top:8px">${ev>0?`<button class="btn sm" data-rg="qtev" data-v="${ev-1}">◀ Prova precedente</button>`:''}<button class="btn sm primary" data-rg="qtev" data-v="${ev+1}">${ev+1<QT_EV.length?'Prova successiva ▶':'Classifica finale ▶'}</button></div>`}
+  </section>`;
+}
+function qtRoll(p,i){ const d=[1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)]; const fant=d[1]===1; const tot=d[0]+(fant?6:d[1])+d[2]+qtAb(p,i); return {tot,fant}; }
 function tvExam(){
   const L=examRows(), n=L.length; if(!n) return `<div class="tv-title"><p class="k">Nessun risultato: scrivili in Regia</p></div>`;
   const {cols,rows}=colsFor(n,10), rh=`calc((100vh - 23vh) / ${rows})`;
