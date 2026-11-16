@@ -1306,7 +1306,7 @@ body.tvmode #viewSchermo{position:fixed;inset:0;transform:scale(calc(1 - var(--t
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 17/11 · 00:30</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 17/11 · 00:25</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2492,7 +2492,7 @@ function roll3(m){
     dice[idx]=keep; rr=idx;
     note=(m>0?'Vantaggio':'Svantaggio')+`: ritirato ${idx===1?'il dado Marvel':'un dado'} (${old===1&&idx===1?'M':old} → ${nv===1&&idx===1?'M':nv}), tenuto ${keep===1&&idx===1?'M':keep}.`;
   }
-  const fant=dice[1]===1||dice[1]===6;
+  const fant=dice[1]===1;
   const sum=dice.reduce((s,v,i)=>s+eff(v,i),0);
   return {dice,rr,note,fant,sum,dm:eff(dice[1],1)};
 }
