@@ -374,6 +374,17 @@ body.master .only-master{display:inline-flex!important}
 .die{font-family:var(--f-display)}
 .roflag{display:none;margin:0 0 12px;padding:8px 12px;border:2px solid var(--edge);background:var(--gold-soft);color:var(--ink);font-size:14px}
 body.ro .roflag{display:block}
+/* schede private: solo il master crea/duplica/elimina; le schede altrui mostrano solo il profilo */
+body:not(.master) .mo{display:none!important}
+.lockbox{display:none;margin:0 0 22px;padding:18px 20px;border:3px solid var(--edge);box-shadow:6px 6px 0 var(--edge);background:var(--card)}
+body.locked .lockbox{display:block}
+.lockbox h2{margin:0 0 6px;font-family:var(--f-display);letter-spacing:.04em;font-size:24px}
+.lockbox p{margin:0 0 12px;color:var(--muted)}
+.lockbox form{display:flex;gap:8px;flex-wrap:wrap}
+.lockbox input{font:600 16px/1 var(--f-body);padding:8px 10px;border:2px solid var(--edge);background:var(--paper);color:var(--ink);text-transform:uppercase;letter-spacing:.12em;width:12em}
+body.locked #privBody,body.locked .dock,body.locked #profile .acts,body.locked #bExport,body.locked #bPdf,body.locked #bDup{display:none!important}
+body.locked #profile input,body.locked #profile textarea{pointer-events:none}
+.rc .lk{position:absolute;top:8px;left:6px;z-index:2;font-size:13px;background:var(--card);border:2px solid var(--edge);padding:2px 5px;line-height:1}
 .save.ok{color:var(--green);font-weight:600}
 
 /* ===== Profilo stile scheda ufficiale: colore del personaggio, scacchi, nome giapponese, righe dati ===== */
@@ -1019,7 +1030,7 @@ body.tvmode{overflow:hidden;background:#07090f}
   <div class="vnav-slot"></div>
 
   <div class="classbar">
-    <div><h1>Classe 1-A · <em>Schede eroe</em></h1><p>L'ultima generazione · Marvel Multiverse d616. Le schede sono condivise: ogni modifica la vede tutto il tavolo.</p></div>
+    <div><h1>Classe 1-A · <em>Schede eroe</em></h1><p>L'ultima generazione · Marvel Multiverse d616. Il profilo di ogni studente lo vedono tutti; la scheda completa solo chi la gioca, con il suo codice, e il master.</p></div>
   </div>
   <nav class="roster" id="roster" aria-label="Schede della classe"></nav>
   <p class="roflag" id="roFlag">Puoi leggere le schede ma non modificarle. Per salvare chiedi al master di invitarti come editor.</p>
@@ -1028,14 +1039,15 @@ body.tvmode{overflow:hidden;background:#07090f}
     <div class="who">
       <label for="charSel" class="charsel">Personaggio</label>
       <select id="charSel" class="charsel"></select>
-      <button class="btn sm" id="bNew">Nuovo</button>
-      <button class="btn sm" id="bDup">Duplica</button>
-      <button class="btn sm only-master" data-crop="thumb" title="Scegli cosa mostra la figurina in alto">Anteprima</button><button class="btn sm ghost" id="bDel">Elimina</button><button class="btn sm danger" id="bDelOk" hidden>Sì, elimina</button>
+      <button class="btn sm mo" id="bNew">Nuovo</button>
+      <button class="btn sm mo" id="bDup">Duplica</button>
+      <button class="btn sm mo" id="bCode" title="Il codice che il giocatore usa per aprire la sua scheda">Codice giocatore</button>
+      <button class="btn sm only-master" data-crop="thumb" title="Scegli cosa mostra la figurina in alto">Anteprima</button><button class="btn sm ghost mo" id="bDel">Elimina</button><button class="btn sm danger" id="bDelOk" hidden>Sì, elimina</button>
     </div>
     <div class="who">
       <span class="save" id="saveState">Salvataggio…</span>
       <button class="btn sm" id="bExport">Esporta</button>
-      <button class="btn sm" id="bImport">Importa</button>
+      <button class="btn sm mo" id="bImport">Importa</button>
       <button class="btn sm" id="bPdf">PDF</button>
       <input type="file" id="fileIn" accept="application/json,.json" hidden><input type="file" id="imgIn" accept="image/*" hidden>
     </div>
@@ -1078,6 +1090,13 @@ body.tvmode{overflow:hidden;background:#07090f}
     <div class="bigname" id="pBig" aria-hidden="true"></div>
   </section>
 
+  <section class="lockbox" id="lockBox" aria-label="Scheda privata">
+    <h2>Scheda privata</h2>
+    <p>Caratteristiche, poteri, equipaggiamento, storia e note di <b id="lockName">questo personaggio</b> li vedono solo chi lo gioca e il master. Se è il tuo, inserisci il codice che ti ha dato il master.</p>
+    <form id="lockForm" autocomplete="off"><input id="lockCode" aria-label="Codice del personaggio" placeholder="Codice" autocapitalize="characters" spellcheck="false"><button class="btn primary sm" type="submit">Apri la scheda</button></form>
+  </section>
+
+  <div id="privBody">
   <header class="hero">
    <div class="hgrid nophoto">
     <div class="hmain">
@@ -1214,8 +1233,11 @@ body.tvmode{overflow:hidden;background:#07090f}
     </div>
   </section>
 
+  </div>
+
   <div class="foot">
     <span id="storeNote"></span>
+    <button class="btn sm ghost" id="bForget" hidden>Dimentica i codici su questo dispositivo</button>
     <button class="btn sm ghost" id="bTheme">Tema chiaro/scuro</button>
   </div>
 </div>
@@ -1690,7 +1712,12 @@ const SB_URL='https://oixkvuhzejmyekhojato.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9peGt2dWh6ZWpteWVraG9qYXRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyNDAwMjYsImV4cCI6MjEwNzgxNjAyNn0.nnbqc5isnaizbWnaAk34weotbCkNUKimkJ0IMPGcqJ4';
 const BUCKET='immagini';
 const PKEY='mha-pin-master';
-const OPEN=['schede','foto'];          // le schede (e le loro foto) le modifica chiunque abbia il link
+/* schede: chiunque vede il profilo; la scheda completa solo chi ha il codice del personaggio (o il master) */
+const CKEY='mha-codici-pg';
+const getCodes=()=>{ try{ const o=JSON.parse(localStorage.getItem(CKEY)||'{}'); return o&&typeof o==='object'?o:{}; }catch(e){ return {}; } };
+const setCodes=o=>{ try{ Object.keys(o).length?localStorage.setItem(CKEY,JSON.stringify(o)):localStorage.removeItem(CKEY); }catch(e){} };
+const codeOf=id=>getCodes()[id]||null;
+const canOpen=id=>!!getPin()||!!codeOf(id);
 if(!window.supabase||!window.supabase.createClient){ console.warn('supabase-js non caricato'); return; }
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 
@@ -1715,8 +1742,18 @@ async function loadCol(c){
     const {data,error}=await sb.from('docs').select('id,data,updated_at').eq('col',c);
     if(error){ delete loaded[c]; throw err('unavailable',error.message); }
     const m=mapOf(c); (data||[]).forEach(r=>m.set(r.id,{data:r.data,at:r.updated_at}));
+    if(c==='schede'){ const p=await fetchPriv(null); (p.sheets||[]).forEach(x=>m.set(x.id,{data:x.data,at:x.at})); }
   })();
   return loaded[c];
+}
+async function fetchPriv(ids){
+  const codes=getCodes(), send={}; Object.keys(codes).forEach(id=>{ if(!ids||ids.includes(id)) send[id]=codes[id]; });
+  const pin=getPin();
+  if(!pin&&!Object.keys(send).length) return {sheets:[],bad:[]};
+  const {data,error}=await sb.rpc('get_sheets',{p_codes:send,p_pin:pin||null,p_ids:ids||null});
+  if(error||!data||!data.ok) return {sheets:[],bad:[]};
+  if(data.bad&&data.bad.length){ const c2=getCodes(); data.bad.forEach(id=>delete c2[id]); setCodes(c2); }
+  return data;
 }
 function emit(c,id,type){
   const m=mapOf(c); const d=docObj(id,m.get(id));
@@ -1733,6 +1770,12 @@ function ensureRealtime(){
       const c=row.col, id=row.id, m=mapOf(c);
       if(p.eventType==='DELETE'){ if(!m.has(id)) return; m.delete(id); emit(c,id,'removed'); return; }
       const had=m.has(id);
+      if(c==='schede'&&canOpen(id)){ // prima di mostrarla rileggo la parte privata
+        fetchPriv([id]).then(pr=>{ const x=(pr.sheets||[]).find(y=>y.id===id);
+          if(x) m.set(id,{data:x.data,at:x.at}); else if(p.new&&p.new.data!==undefined) m.set(id,{data:p.new.data,at:p.new.updated_at}); else return;
+          emit(c,id,had?'modified':'added'); });
+        return;
+      }
       if(p.new&&p.new.data!==undefined){ m.set(id,{data:p.new.data,at:p.new.updated_at}); emit(c,id,had?'modified':'added'); }
       else { // payload troncato: rileggo la riga
         sb.from('docs').select('data,updated_at').eq('col',c).eq('id',id).maybeSingle().then(({data})=>{ if(data){ m.set(id,{data:data.data,at:data.updated_at}); emit(c,id,had?'modified':'added'); } });
@@ -1747,6 +1790,7 @@ function ensureRealtime(){
 async function resyncAll(){
   for(const c of Object.keys(loaded)){
     const {data,error}=await sb.from('docs').select('id,data,updated_at').eq('col',c); if(error) continue;
+    if(c==='schede'){ const pr=await fetchPriv(null); (pr.sheets||[]).forEach(x=>{ const r=data.find(y=>y.id===x.id); if(r){ r.data=x.data; r.updated_at=x.at; } }); }
     const m=mapOf(c), seen=new Set();
     (data||[]).forEach(r=>{ seen.add(r.id); const cur=m.get(r.id); if(!cur||cur.at!==r.updated_at){ const had=!!cur; m.set(r.id,{data:r.data,at:r.updated_at}); emit(c,r.id,had?'modified':'added'); } });
     [...m.keys()].forEach(id=>{ if(!seen.has(id)){ m.delete(id); emit(c,id,'removed'); } });
@@ -1757,13 +1801,16 @@ document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==
 /* ---------- scritture ---------- */
 async function put(c,id,data){
   const body=JSON.parse(JSON.stringify(data===undefined?{}:data));
-  const {data:r,error}=await sb.rpc('put_doc',{p_col:c,p_id:id,p_data:body,p_pin:OPEN.includes(c)?null:getPin()});
+  const cid=c==='foto'?String(id).split('__')[0]:id;
+  const {data:r,error}=c==='schede'
+    ?await sb.rpc('put_sheet',{p_id:id,p_data:body,p_code:codeOf(id),p_pin:getPin()||null})
+    :await sb.rpc('put_doc',{p_col:c,p_id:id,p_data:body,p_pin:getPin()||null,p_code:c==='foto'?codeOf(cid):null});
   if(error) throw err('unavailable',error.message);
-  if(!r||!r.ok){ if(r&&r.err==='troppo_grande') throw err('quota_exceeded'); throw err('permission_denied','Serve il PIN del master'); }
+  if(!r||!r.ok){ if(r&&r.err==='troppo_grande') throw err('quota_exceeded'); throw err('permission_denied',c==='schede'||c==='foto'?'Serve il codice del personaggio':'Serve il PIN del master'); }
   mapOf(c).set(id,{data:body,at:new Date().toISOString()});
 }
 async function del(c,id){
-  const {data:r,error}=await sb.rpc('del_doc',{p_col:c,p_id:id,p_pin:OPEN.includes(c)?null:getPin()});
+  const {data:r,error}=await sb.rpc('del_doc',{p_col:c,p_id:id,p_pin:getPin()||null,p_code:c==='foto'?codeOf(String(id).split('__')[0]):null});
   if(error) throw err('unavailable',error.message);
   if(!r||!r.ok) throw err('permission_denied','Serve il PIN del master');
   mapOf(c).delete(id);
@@ -1809,9 +1856,30 @@ const user={
   can:async()=>true,
   canEdit:async()=>{ if(pinValid!==null) return pinValid; const p=getPin(); if(!p) return pinValid=false; const r=await checkPin(p); if(r.err==='rete') return false; pinValid=!!r.ok; if(!r.ok&&r.err!=='bloccato') setPin(''); return pinValid; }
 };
+/* ---------- schede private: codici dei giocatori ---------- */
+async function refreshSchede(){ // dopo login/logout o un nuovo codice: rileggo tutte le schede e avviso la pagina
+  if(!loaded.schede) return;
+  const {data,error}=await sb.from('docs').select('id,data,updated_at').eq('col','schede'); if(error) return;
+  const pr=await fetchPriv(null), m=mapOf('schede');
+  (data||[]).forEach(r=>{ const x=(pr.sheets||[]).find(y=>y.id===r.id); m.set(r.id,x?{data:x.data,at:x.at}:{data:r.data,at:r.updated_at}); emit('schede',r.id,'modified'); });
+}
+window.mhaSheets={
+  hasCode:id=>!!codeOf(id),
+  anyCode:()=>Object.keys(getCodes()).length>0,
+  unlock:async(id,code)=>{
+    code=String(code||'').trim(); if(!code) return false;
+    const {data,error}=await sb.rpc('get_sheets',{p_codes:{[id]:code},p_pin:null,p_ids:[id]});
+    if(error) throw err('unavailable',error.message);
+    const x=data&&data.ok&&(data.sheets||[]).find(y=>y.id===id); if(!x) return false;
+    const c2=getCodes(); c2[id]=code; setCodes(c2);
+    mapOf('schede').set(id,{data:x.data,at:x.at}); emit('schede',id,'modified'); return true;
+  },
+  setCode:async(id,code)=>{ const {data,error}=await sb.rpc('set_pg_code',{p_id:id,p_code:String(code||'').trim(),p_pin:getPin()||null}); if(error) throw err('unavailable',error.message); return data||{ok:false}; },
+  forget:async()=>{ setCodes({}); await refreshSchede(); }
+};
 window.mhaMaster={
-  login:async p=>{ const r=await checkPin(String(p||'').trim()); if(r.ok){ setPin(String(p).trim()); pinValid=true; } return r; },
-  logout:()=>{ setPin(''); pinValid=false; },
+  login:async p=>{ const r=await checkPin(String(p||'').trim()); if(r.ok){ setPin(String(p).trim()); pinValid=true; refreshSchede(); } return r; },
+  logout:()=>{ setPin(''); pinValid=false; refreshSchede(); },
   isOn:()=>pinValid===true
 };
 
@@ -1958,6 +2026,14 @@ function fmt(n){return n>0?'+'+n:String(n)}
 function renderAll(){
   bindFields();
   renderRank();renderAbil();renderState();renderConds();renderPowers();renderTraits();renderTags();renderSupport();renderSel();renderPhoto();renderGrowth();
+  applyLock();
+}
+function applyLock(){
+  const L=!!(C&&C._locked); document.body.classList.toggle('locked',L);
+  document.querySelectorAll('#profile input,#profile textarea').forEach(el=>{ el.readOnly=L; });
+  const pc=$('#pColor'); if(pc) pc.disabled=L;
+  $('#lockName').textContent=(C&&(C.name||C.hero))||'questo personaggio';
+  const f=$('#bForget'); if(f) f.hidden=!(window.mhaSheets&&mhaSheets.anyCode());
 }
 function bindFields(){
   document.querySelectorAll('[data-f]').forEach(el=>{ if(el.id==='elemSel')return; el.value=C[el.dataset.f]??''; });
@@ -2117,9 +2193,10 @@ function renderRoster(){
     const nm=c.name||c.hero||'Senza nome', ini=(nm.trim()[0]||'?').toUpperCase();
     const pt=portraitOf(c); const pic=pt?`<span class="phw"><img class="ph" src="${esc(pt)}" alt="" style="${cropCss(thumbCropOf(c))}"></span>`:`<span class="ph ini" aria-hidden="true">${esc(ini)}</span>`;
     const ed=(pt&&isMaster())?'<span class="rc-edit" role="button" aria-label="Inquadra la figurina di '+esc(nm)+'">✎ Inquadra</span>':'';
-    return `<button class="rc" style="--rc:${/^#[0-9a-f]{6}$/i.test(c.color||"")?c.color:"var(--edge)"}" data-pick="${esc(c.id)}" aria-current="${c.id===C.id}">${ed}${pic}<span class="n">${esc(nm)}</span><span class="p">${esc(c.hero||c.quirk||'')}${c.player?' · '+esc(c.player):''}</span></button>`;
+    const lk=c._locked?'<span class="lk" title="Scheda privata">🔒</span>':'';
+    return `<button class="rc" style="--rc:${/^#[0-9a-f]{6}$/i.test(c.color||"")?c.color:"var(--edge)"}" data-pick="${esc(c.id)}" aria-current="${c.id===C.id}">${lk}${ed}${pic}<span class="n">${esc(nm)}</span><span class="p">${esc(c.hero||c.quirk||'')}${c.player?' · '+esc(c.player):''}</span></button>`;
   }).join('');
-  $('#roster').innerHTML=cards+`<button class="rc add" data-pick="__new">+ Nuova<br>scheda</button>`;
+  $('#roster').innerHTML=cards+(isMaster()?`<button class="rc add" data-pick="__new">+ Nuova<br>scheda</button>`:'');
 }
 function renderSel(){
   renderRoster();
@@ -2164,6 +2241,19 @@ $('#rkUp').onclick=()=>{ if(C.rank<6){C.rank++; changed(true);} };
 $('#rkDown').onclick=()=>{ if(C.rank>1){C.rank--; clampCur(); changed(true);} };
 $('#bRest').onclick=()=>{ C.hp=null;C.fc=null;C.karma=null; C.conds=C.conds.filter(c=>c==='Accecato'||c==='Assordato'?true:false); renderState();renderConds(); changed(); toast('Salute, Concentrazione e Plus Ultra al massimo'); };
 $('#bAddSup').onclick=()=>{ C.support.push({name:'',desc:''}); renderSupport(); changed(); const ins=document.querySelectorAll('[data-sk="name"]'); ins[ins.length-1]?.focus(); };
+$('#lockForm').onsubmit=async e=>{
+  e.preventDefault(); const inp=$('#lockCode'), code=inp.value.trim(); if(!code||!C) return;
+  try{ const ok=window.mhaSheets&&await mhaSheets.unlock(C.id,code); if(ok){ inp.value=''; toast('Scheda aperta su questo dispositivo'); } else toast('Codice non valido'); }
+  catch(err){ toast('Connessione non riuscita, riprova'); }
+};
+$('#bForget').onclick=async()=>{ if(window.mhaSheets){ await mhaSheets.forget(); toast('Codici dimenticati: le schede sono di nuovo private su questo dispositivo'); applyLock(); } };
+$('#bCode').onclick=async()=>{
+  if(!C||!window.mhaSheets) return; const nm=C.name||C.hero||'questo personaggio';
+  const code=prompt('Nuovo codice per '+nm+' (almeno 4 caratteri). Dallo solo al suo giocatore: il vecchio codice smette di funzionare.');
+  if(code==null) return;
+  try{ const r=await mhaSheets.setCode(C.id,code); toast(r.ok?'Codice di '+nm+' aggiornato':r.err==='corto'?'Il codice deve avere almeno 4 caratteri':'Serve la modalità master'); }
+  catch(err){ toast('Connessione non riuscita, riprova'); }
+};
 $('#bTheme').onclick=()=>{ const r=document.documentElement; const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme=dark?'light':'dark'; try{localStorage.setItem('d616-theme',r.dataset.theme)}catch(e){} };
 try{const th=localStorage.getItem('d616-theme'); if(th)document.documentElement.dataset.theme=th;}catch(e){}
 
@@ -2402,6 +2492,7 @@ function setSave(t,kind){ const s=$('#saveState'); s.textContent=t; s.classList.
 function lsSave(){ try{ localStorage.setItem(LSK,JSON.stringify(store)); return true }catch(e){ return false } }
 function loadLocal(){ try{ const s=JSON.parse(localStorage.getItem(LSK)||'null'); if(s&&Array.isArray(s.chars)&&s.chars.length) return s }catch(e){} return null; }
 function queue(id){
+  const c0=store.chars.find(x=>x.id===id); if(c0&&c0._locked) return;
   if(!dbOk){ setSave(lsSave()?'Salvato solo in questo browser':'Non salvato: usa Esporta', lsSave()?'':'err'); return; }
   if(!canWrite){ setSave('Sola lettura','err'); return; }
   setSave('Salvataggio…');
@@ -2412,10 +2503,11 @@ async function pushChar(id){
   const c=store.chars.find(x=>x.id===id); if(!c||!col) return;
   if(busy[id]){ again[id]=true; return; }
   busy[id]=true;
-  try{ const body=JSON.parse(JSON.stringify(c)); await col.doc(id).set({char:body,updatedAt:c.updatedAt||Date.now()}); setSave('Salvato per tutto il tavolo','ok'); }
+  try{ const body=JSON.parse(JSON.stringify(c)); delete body._locked; await col.doc(id).set({char:body,updatedAt:c.updatedAt||Date.now()}); setSave('Salvato','ok'); }
   catch(e){
     const code=e&&e.code;
-    if(code==='invalid_argument'){ canWrite=false; document.body.classList.add('ro'); setSave('Sola lettura','err'); }
+    if(code==='permission_denied'){ setSave('Non salvato: serve il codice del personaggio','err'); }
+    else if(code==='invalid_argument'){ canWrite=false; document.body.classList.add('ro'); setSave('Sola lettura','err'); }
     else if(code==='quota_exceeded'){ setSave('Spazio esaurito: prova una foto più piccola','err'); }
     else { setSave('Non salvato, riprovo tra poco','err'); setTimeout(()=>queue(id),4000); }
   }
@@ -2445,7 +2537,7 @@ function applySnap(snap){
     if(ch.doc.metadata&&ch.doc.metadata.hasPendingWrites) return;
     const d=ch.doc.data(); if(!d||!d.char) return;
     const local=store.chars.find(c=>c.id===id);
-    if(local&&((local.updatedAt||0)>=(d.updatedAt||0)||pendingFor(id))) return;
+    if(local&&!!local._locked===!!d.char._locked&&((local.updatedAt||0)>=(d.updatedAt||0)||pendingFor(id))) return;
     const n=Object.assign(blank(),d.char); n.id=id; n.updatedAt=d.updatedAt||n.updatedAt;
     if(local){ Object.keys(local).forEach(k=>delete local[k]); Object.assign(local,n); if(C===local) cur=true; }
     else store.chars.push(n);
@@ -2734,7 +2826,10 @@ document.addEventListener('toggle',e=>{ const d=e.target; if(d&&d.classList&&d.c
 function part(key){
   if(!key) return null;
   if(key.startsWith('pg:')){
-    const c=store.chars.find(x=>x.id===key.slice(3)); if(!c) return null; const d=statsOf(c);
+    const c=store.chars.find(x=>x.id===key.slice(3)); if(!c) return null;
+    if(c._locked){ const v=c.der||{}, hm=+v.hpMax||10, fm=+v.fcMax||10, z={M:10,A:10,R:10,V:10,E:10,L:10};
+      return {key,kind:'pg',name:c.name||c.hero||'PG',short:(c.name||c.hero||'PG').split(' ')[0],img:portraitOf(c),hp:c.hp==null?hm:c.hp,hpMax:hm,fc:c.fc==null?fm:c.fc,fcMax:fm,def:z,mult:{M:1,A:1,R:1,V:1,E:1,L:1},ab:c.ab,dr:0,fdr:0,conds:c.conds||[],color:c.color||'#2a9d8f'}; }
+    const d=statsOf(c);
     return {key,kind:'pg',name:c.name||c.hero||'PG',short:(c.name||c.hero||'PG').split(' ')[0],img:portraitOf(c),hp:c.hp==null?d.hpMax:c.hp,hpMax:d.hpMax,fc:c.fc==null?d.fcMax:c.fc,fcMax:d.fcMax,def:d.def,mult:d.mult,ab:c.ab,dr:d.dr,fdr:d.fdr,conds:c.conds||[],color:c.color||'#2a9d8f'};
   }
   const e=((live.fight&&live.fight.enemies)||[]).find(x=>x.k===key.slice(3)); if(!e) return null;
