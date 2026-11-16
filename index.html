@@ -1311,7 +1311,7 @@ body.tvmode #viewSchermo{position:fixed;inset:0;transform:scale(calc(1 - var(--t
 <div id="viewRegia" hidden>
   <div class="wrap rg-wrap">
     <div class="vnav-slot"></div>
-    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 17/11 · 01:00</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
+    <div class="classbar"><div><h1>Regia <em>del master</em> <small style="font-size:12px;color:var(--muted);font-family:var(--f-body)">versione 17/11 · 01:10</small></h1><p>Da qui decidi cosa compare sulla TV. Apri la sezione Schermo sul PC collegato alla TV con il tuo account.</p></div></div>
     <div id="rgBody"></div>
   </div>
 </div>
@@ -2923,6 +2923,10 @@ function cMs(c){ return c.running?Math.max(0,(c.endAt||0)-Date.now()):(+c.remain
 function fmtMs(ms){ const t=Math.ceil(ms/1000), m=Math.floor(t/60), x=t%60; return m+':'+String(x).padStart(2,'0'); }
 function cDisp(c){ if(c.type==='time') return `<span class="cdown" data-cid="${esc(c.id)}">${fmtMs(cMs(c))}</span>`; return esc(String(c.value))+(c.type==='manual'&&c.max?'/'+esc(String(c.max)):''); }
 function cZero(c){ return c.type==='time'?cMs(c)<=0:c.type==='round'?(+c.value<=0):(c.max?+c.value>=+c.max:false); }
+const ABK2={'Mischia':'M','Agilità':'A','Resistenza':'R','Vigilanza':'V','Ego':'E','Logica':'L'};
+function pwAtk(c,en){ const pw=c&&(c.powers||[]).find(x=>x.en===en); const f=pw&&findPow(pw.set,pw.en); if(!f) return null; const d=f.p[5]||'';
+  const m=d.match(/[Aa]ttacco (?:di |in )?(Mischia|Agilità|Ego|Logica)[^.;]{0,30}?contro (?:la |le )?(?:difes[ae] di )?(Mischia|Agilità|Ego|Logica|Resistenza|Vigilanza)/);
+  return m?{ab:ABK2[m[1]],def:ABK2[m[2]],name:f.p[1]}:null; }
 function pgMoves(c){ if(!c) return []; return (c.powers||[]).map(p=>{ const f=findPow(p.set,p.en); const it=f?f.p[1]:p.en; return {en:p.en,it,nick:p.nick||'',label:p.nick||it}; }); }
 function hasBonus(){ return !!(live.fight&&live.fight.order.some(o=>o.fant)); }
 function skipThis(o){ const f=live.fight; if(f.round===0&&!o.fant) return true; if(f.skipDown){ const p=part(o.key); if(p&&p.hp<=0) return true; } return false; }
@@ -3146,7 +3150,7 @@ function fightHtml(){
   const cur=parts[f.turn]?parts[f.turn].p:null;
   if(!atk.from&&cur) atk.from=cur.key;
   const A=part(atk.from), T=part(atk.to);
-  const defK=DEFOF[atk.ab]; const def=T?((T.defVs&&T.defVs[atk.ab]!=null)?T.defVs[atk.ab]:T.def[defK]):null; const defAlt=T&&T.defBy?T.defBy[atk.ab]:'';
+  const defK=atk.defK||DEFOF[atk.ab]; const def=T?(atk.defK?T.def[defK]:((T.defVs&&T.defVs[atk.ab]!=null)?T.defVs[atk.ab]:T.def[defK])):null; const defAlt=T&&T.defBy&&!atk.defK?T.defBy[atk.ab]:'';
   const roll=parseInt(atk.roll); const hit=T&&!isNaN(roll)?roll>=def:null;
   let calc='';
   if(A&&T&&hit){
@@ -3176,7 +3180,7 @@ function fightHtml(){
         ${A&&A.kind==='pg'?`<label>Con quale tecnica<select id="aPw">${opt('','— attacco normale —',atk.pw)}${pgMoves(store.chars.find(c=>c.id===A.key.slice(3))).map(m=>opt(m.en,m.nick?m.nick+' ('+m.it+')':m.it,atk.pw)).join('')}</select></label>
         ${atk.pw?`<label class="rg-chk"><input type="checkbox" id="aFx"${atk.fx?' checked':''}> Animazione della tecnica sulla TV quando colpisce</label>`:''}`:''}
         <div class="seg rg-seg" role="group" aria-label="Con cosa attacca">${['M','A','E','L'].map(k=>`<button data-rg="ab" data-v="${k}" aria-pressed="${atk.ab===k}">${ABN[k]}</button>`).join('')}</div>
-        <p class="rg-def">${T?`${esc(T.name)} si difende con <b>${defAlt?esc(defAlt):ABN[defK]} ${def}</b>`:'Scegli il bersaglio per vedere la sua difesa.'}</p>
+        <p class="rg-def">${T?`${esc(T.name)} si difende con <b>${defAlt?esc(defAlt):ABN[defK]} ${def}</b>${atk.defK&&atk.defN?` <small>(${esc(atk.defN)}: ${ABN[atk.ab]} contro ${ABN[defK]})</small>`:''}`:'Scegli il bersaglio per vedere la sua difesa.'}</p>
         <label>Totale del tiro (3d6 + caratteristica)<input id="aRoll" type="number" value="${esc(atk.roll)}"></label>
         <p class="rg-hit ${hit===true?'yes':hit===false?'no':''}">${hit===true?'Colpito!':hit===false?'Mancato':'&nbsp;'}</p>
         ${hit?`<label>Dado Marvel (1 = Fantastico)<input id="aMd" type="number" min="1" max="6" value="${esc(atk.md)}"></label>
@@ -3221,9 +3225,9 @@ document.addEventListener('change',e=>{
   else if(t.dataset.ovlook!=null){ const o=(live.ov||[])[+t.dataset.ovlook]; if(o){ o.look=t.value; saveLive(); } }
   else if(t.id==='rgSkip'){ live.fight.skipDown=t.checked; saveLive(); }
   else if(t.dataset.cshow){ const c=(live.counters||[]).find(x=>x.id===t.dataset.cshow); if(c){ c.show=t.checked; saveLive(); } }
-  else if(t.id==='aFrom'){ atk.from=t.value; atk.pw=''; if(atk.to===atk.from) atk.to=''; atk.roll=''; atk.md=''; atk.dmg=''; renderRegia(); }
+  else if(t.id==='aFrom'){ atk.from=t.value; atk.pw=''; atk.defK=''; atk.defN=''; if(atk.to===atk.from) atk.to=''; atk.roll=''; atk.md=''; atk.dmg=''; renderRegia(); }
   else if(t.id==='aTo'){ atk.to=t.value; atk.dmg=''; renderRegia(); }
-  else if(t.id==='aPw'){ atk.pw=t.value; renderRegia(); }
+  else if(t.id==='aPw'){ atk.pw=t.value; const A=part(atk.from); const x=atk.pw&&A&&A.kind==='pg'?pwAtk(store.chars.find(c=>c.id===A.key.slice(3)),atk.pw):null; if(x){ atk.ab=x.ab; atk.defK=x.def; atk.defN=x.name; } else { atk.defK=''; atk.defN=''; } atk.dmg=''; atk._auto=null; renderRegia(); }
   else if(t.id==='aFx'){ atk.fx=t.checked; }
   else if(t.dataset.init){ const o=live.fight.order.find(x=>x.key===t.dataset.init); if(o){ o.init=t.value===''?null:+t.value; saveLive(); } }
   else if(t.dataset.fant){ const o=live.fight.order.find(x=>x.key===t.dataset.fant); if(o){ o.fant=t.checked; saveLive(); } }
@@ -3235,7 +3239,7 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-rg]'); if(!b||!b.closest('#viewRegia')) return;
   const a=b.dataset.rg, id=b.dataset.id;
   if(a==='mode'){ live.mode=b.dataset.v; if(live.mode==='scena') autoMusic('scena'); saveLive(); }
-  else if(a==='useroll'){ const p=part(b.dataset.k); const t=p&&p.lastRoll; if(!t) return; atk.from=p.key; atk.ab=t.k; if(t.k==='E'||t.k==='L') atk.pool='fc'; atk.roll=String(t.tot); atk.md=String(t.md===1?1:t.md); atk.dmg=''; atk._auto=null; renderRegia(); }
+  else if(a==='useroll'){ const p=part(b.dataset.k); const t=p&&p.lastRoll; if(!t) return; atk.from=p.key; if(atk.ab!==t.k){ atk.ab=t.k; atk.defK=''; atk.defN=''; } atk.roll=String(t.tot); atk.md=String(t.md===1?1:t.md); atk.dmg=''; atk._auto=null; renderRegia(); }
   else if(a==='useinit'){ const p=part(b.dataset.k); const t=p&&p.lastRoll; const o=live.fight&&live.fight.order.find(x=>x.key===b.dataset.k); if(!t||!o) return; o.init=t.tot; o.fant=!!t.fant; saveLive(); renderRegia(); }
   else if(a==='safe'){ live.safe=Math.max(0,Math.min(10,(+live.safe||0)+(+b.dataset.d||0))); saveLive(); renderRegia(); }
   else if(a==='qtshow'){ qtS(); live.mode='test'; saveLive(); renderRegia(); }
@@ -3320,7 +3324,7 @@ document.addEventListener('click',async e=>{
   else if(a==='next'||a==='prev'){ const f=live.fight; if(!f.order.length) return; advance(a==='next'?1:-1); const p=part(f.order[f.turn].key); atk={from:p?p.key:'',to:'',ab:'M',roll:'',md:'',pool:'hp',dmg:'',pw:'',fx:true}; saveLive(); }
   else if(a==='hp'){ const p=part(b.dataset.k); if(!p) return; setPool(p.key,'hp',p.hp+(+b.dataset.d)*(R.amt||5)); }
   else if(a==='cond'){ toggleCond(b.dataset.k,b.dataset.c); }
-  else if(a==='ab'){ atk.ab=b.dataset.v; atk.pool=(atk.ab==='E'||atk.ab==='L')&&atk.pool==='hp'?atk.pool:atk.pool; atk.dmg=''; atk._auto=null; renderRegia(); }
+  else if(a==='ab'){ atk.ab=b.dataset.v; atk.defK=''; atk.defN=''; atk.pool=(atk.ab==='E'||atk.ab==='L')&&atk.pool==='hp'?atk.pool:atk.pool; atk.dmg=''; atk._auto=null; renderRegia(); }
   else if(a==='pool'){ atk.pool=b.dataset.v; atk.dmg=''; atk._auto=null; renderRegia(); }
   else if(a==='apply'){ const A=part(atk.from), T=part(atk.to); const dmg=Math.max(0,+document.getElementById('aDmg').value||0); if(!A||!T) return;
     const fant=+atk.md===1;
