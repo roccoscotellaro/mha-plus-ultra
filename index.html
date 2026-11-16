@@ -1867,14 +1867,14 @@ window.mhaSheets={
   hasCode:id=>!!codeOf(id),
   anyCode:()=>Object.keys(getCodes()).length>0,
   unlock:async(id,code)=>{
-    code=String(code||'').trim(); if(!code) return false;
+    code=String(code||'').trim().toUpperCase(); if(!code) return false;
     const {data,error}=await sb.rpc('get_sheets',{p_codes:{[id]:code},p_pin:null,p_ids:[id]});
     if(error) throw err('unavailable',error.message);
     const x=data&&data.ok&&(data.sheets||[]).find(y=>y.id===id); if(!x) return false;
     const c2=getCodes(); c2[id]=code; setCodes(c2);
     mapOf('schede').set(id,{data:x.data,at:x.at}); emit('schede',id,'modified'); return true;
   },
-  setCode:async(id,code)=>{ const {data,error}=await sb.rpc('set_pg_code',{p_id:id,p_code:String(code||'').trim(),p_pin:getPin()||null}); if(error) throw err('unavailable',error.message); return data||{ok:false}; },
+  setCode:async(id,code)=>{ const {data,error}=await sb.rpc('set_pg_code',{p_id:id,p_code:String(code||'').trim().toUpperCase(),p_pin:getPin()||null}); if(error) throw err('unavailable',error.message); return data||{ok:false}; },
   forget:async()=>{ setCodes({}); await refreshSchede(); }
 };
 window.mhaMaster={
